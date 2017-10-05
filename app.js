@@ -8,7 +8,7 @@ app.use('/assets', express.static(__dirname + '/assets'));
 
 var Room = require('./room.js');
 var User = require('./user.js');
-var TurnBasedGameHandler = require('./turnBasedGameHandler.js');
+var RealTimeGameHandler = require('./realTimeGameHandler.js');
 
 // constants
 const ROOM_SIZE = 2;
@@ -21,9 +21,8 @@ var roomIndex = 1;
 var connectedUsers = {};
 var matchmakingQueue = [];
 
-
 function setupConnection(socket) {
-	var user = new User(socket.id);
+	var user = new User(socket);
 	connectedUsers[socket.id] = user;
 	console.log(user.id + " connected.");
 
@@ -33,7 +32,7 @@ function setupConnection(socket) {
 		var roomUsers = matchmakingQueue.slice(0, ROOM_SIZE);
 		var room = new Room(roomIndex, roomUsers);
 
-		var gameHandler = new TurnBasedGameHandler(io, socket, room);
+		var gameHandler = new RealTimeGameHandler(room);
 		room.gameHandler = gameHandler;
 
 		rooms[room.id] = room;

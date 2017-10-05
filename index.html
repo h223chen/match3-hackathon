@@ -26,6 +26,9 @@
                 console.log(data);
                 // socket.emit('received from server', {move: data});
             })
+            socket.on('whatGameRoom', function(data) {
+                console.log(data);
+            });
 
             // Example by https://twitter.com/awapblog
             // Updated by https://twitter.com/boldbigflank
