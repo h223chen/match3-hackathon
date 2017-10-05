@@ -40,9 +40,10 @@
                 $("#myScore").text(myScore);
                 $("#enemyScore").text(enemyScore);
             });
-            socket.on('gameStart', function(data)) {
-                alert("START!");
-            }
+            socket.on('gameStart', function(data) {
+                $("#myScore").text("");
+                $("#enemyScore").text("");
+            });
 
             // Example by https://twitter.com/awapblog
             // Updated by https://twitter.com/boldbigflank
@@ -569,8 +570,8 @@
 
     </script>
     <div id="gems"></div>
-    <h2>Your Score: <span id='myScore'></span></h2>
-    <h2>Your Opponent's Score: <span id='enemyScore'></span></h2>
+    <h2>Your Score: <span id='myScore'>Waiting for game to start...</span></h2>
+    <h2>Your Opponent's Score: <span id='enemyScore'>Waiting for game to start...</span></h2>
 
     </body>
 </html>
