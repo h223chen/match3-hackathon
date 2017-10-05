@@ -6,6 +6,7 @@ app.use('/assets', express.static(__dirname + '/assets'));
 var fs = require('fs');
 var Room = require('./room.js');
 var User = require('./user.js');
+var TurnBasedGameHandler = require('./turnBasedGameHandler.js');
 
 // constants
 const ROOM_SIZE = 2;
@@ -29,6 +30,10 @@ function setupConnection(socket) {
 	if (matchmakingQueue.length >= ROOM_SIZE) {
 		var roomUsers = matchmakingQueue.slice(0, ROOM_SIZE);
 		var room = new Room(roomIndex, roomUsers);
+
+		var gameHandler = new TurnBasedGameHandler(io, socket, room);
+		room.gameHandler = gameHandler;
+
 		rooms[room.id] = room;
 		matchmakingQueue.splice(0, ROOM_SIZE);
 		console.log("Created room #" + roomIndex + " with users " + roomUsers.map(u => u.id));
