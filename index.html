@@ -15,7 +15,11 @@
     <script type="text/javascript">
 
         window.onload = function() {
-            var socket = io('http://localhost:8081');
+            socket = io('http://localhost:8081');
+            socket.on('whatGameRoom', function(data) {
+                console.log(data);
+            });
+
             socket.on('clientReceive', function(data) {
                 console.log(data);
                 // socket.emit('received from server', {move: data});
