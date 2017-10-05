@@ -521,20 +521,19 @@
                         {
                             gemsMissingFromCol++;
                             gem = gems.getFirstDead();
-                            gem.reset(i * GEM_SIZE_SPACED, -gemsMissingFromCol * GEM_SIZE_SPACED);
+                            gem.reset(i * GEM_SIZE_SPACED, (-6-gemsMissingFromCol) * GEM_SIZE_SPACED);
                             gem.dirty = true;
-                                                    gem.scale.setTo(gemRatio,gemRatio);
 
                             randomizeGemColor(gem);
                             setGemPos(gem, i, j);
-                            tweenGemPos(gem, gem.posX, gem.posY, gemsMissingFromCol * 2);
+                            tweenGemPos(gem, gem.posX, gem.posY, 4);
                         }
                     }
 
                     maxGemsMissingFromCol = Math.max(maxGemsMissingFromCol, gemsMissingFromCol);
                 }
 
-                game.time.events.add(maxGemsMissingFromCol * 2 * 100, boardRefilled);
+                game.time.events.add(600, boardRefilled);
 
             }
 
