@@ -15,6 +15,7 @@
     <body style="margin:0">
 
     <script type="text/javascript">
+        // lets browser access socket variable.
         var sr;
 
         window.onload = function() {
@@ -27,6 +28,9 @@
                 windowHeight = windowWidth / 1.2
             }
             var gemRatio = windowHeight / 340;
+            var scoreText;
+            var myScore;
+            var enemyScore;
 
             var socket = io();
             sr = socket;
@@ -39,21 +43,30 @@
                 console.log(data);
             });
 
-            // TODO MAKE WORK FOR MORE THAN 3 PLAYERS
-            socket.on('updateScoreboard', function(data) {
-                var myScore = data.scoreboard[socket.id];
-                var enemyScore = data.scoreboard[Object.keys(data.scoreboard).filter(k => k != socket.id)[0]];
+            function updateScoreboard(scoreboard) {
+                myScore = scoreboard[socket.id];
+                enemyScore = scoreboard[Object.keys(scoreboard).filter(k => k != socket.id)[0]];
                 $("#myScore").text(myScore);
                 $("#enemyScore").text(enemyScore);
+            }
+
+            // TODO MAKE WORK FOR MORE THAN 3 PLAYERS
+            socket.on('updateScoreboard', function(data) {
+                updateScoreboard(data.scoreboard);
             });
             socket.on('gameStart', function(data) {
-                $("#myScore").text("");
-                $("#enemyScore").text("");
+                $("#myScore").text("0");
+                $("#enemyScore").text("0");
             });
+
+            // end the game
             socket.on('gameEnd', function(data) {
-                $("#myScore").text("");
-                $("#enemyScore").text("");
-                game.input.deleteMoveCallback(slideGem, this);
+                updateScoreboard(data.scoreboard);
+                var gameOverTextStyle = { boundsAlignH : "center", boundsAlignV: "middle", fill: "#FFF", font: "bold " + (windowWidth / 10)+ "px Helvetica" };
+                gameOverText = game.add.text(0, 0, (myScore > enemyScore ? "VICTORY" : "DEFEAT"), gameOverTextStyle);
+                gameOverText.setTextBounds(0, 0, windowWidth, windowHeight);
+                gameOverText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
+                game.paused = true;
                 console.log("Game end");
             });
 
@@ -102,7 +115,6 @@
                 allowInput = false;
 
                 game.input.addMoveCallback(slideGem, this);
-
             }
 
             function point(x, y) {
