@@ -86,8 +86,8 @@
             }
 
             function releaseGem() {
-                if (tempShiftedGem === null) {
-                    floatingGem.destroy();
+                floatingGem.destroy();
+                if (tempShiftedGem === null) {                    
                     selectedGem.alpha = 1;
                     selectedGem = null;
                     return;
@@ -102,7 +102,6 @@
                 checkBoardAndKillGemMatches();
 
                 selectedGem.alpha = 1;
-                floatingGem.destroy();
                 selectedGem = null;
                 tempShiftedGem = null;
 
@@ -420,17 +419,25 @@
 
             }
 
-            // animated gem movement
             function tweenGemPos(gem, newPosX, newPosY, durationMultiplier) {
-
+                var midpointX = newPosX, midpointY = newPosY;
                 // console.log('Tween ',gem.name,' from ',gem.posX, ',', gem.posY, ' to ', newPosX, ',', newPosY);
                 if (durationMultiplier === null || typeof durationMultiplier === 'undefined')
                 {
-                    durationMultiplier = 0.25;
+                    durationMultiplier = 0.75;
+                    if (newPosY !== gem.posY){
+                        midpointX = newPosX + newPosX * (gem === tempShiftedGem ? 0.2 : -0.2);
+                    }
+                    if (newPosX !== gem.posX) {
+                        midpointY = newPosY + newPosY * (gem === tempShiftedGem ? 0.2 : -0.2);
+                    }
                 }
-
-                return game.add.tween(gem).to({x: newPosX  * GEM_SIZE_SPACED, y: newPosY * GEM_SIZE_SPACED}, 100 * durationMultiplier, Phaser.Easing.Linear.None, true);
-
+                return game.add.tween(gem).to({
+                    x: [midpointX * GEM_SIZE_SPACED, newPosX * GEM_SIZE_SPACED],
+                    y: [midpointY * GEM_SIZE_SPACED, newPosY * GEM_SIZE_SPACED]
+                }, 100 * durationMultiplier, Phaser.Easing.Linear.None, true).interpolation(function(v, k){
+                        return Phaser.Math.bezierInterpolation(v, k);
+                });
             }
 
             // look for gems with empty space beneath them and move them down
