@@ -90,13 +90,6 @@ Object.keys(ifaces).forEach(function (ifname) {
 
 
 
-
-
 io.on('connection', function (socket) {
 	setupConnection(socket);
-
-  socket.on('move', function (data) {
-    console.log(data);
-    socket.emit('clientReceive', {message: "server received your move"});
-  });
 });
