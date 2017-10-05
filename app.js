@@ -19,6 +19,7 @@ function setupConnection(socket) {
 	// add to queue
 	matchmakingQueue.push(socket.id);
 	if (matchmakingQueue.length >= ROOM_SIZE) {
+		
 		matchmakingQueue.splice(0, ROOM_SIZE);
 	}
 
