@@ -15,25 +15,38 @@
     <script type="text/javascript">
 
         window.onload = function() {
-            socket = io('http://localhost:8081');
-            socket.on('whatGameRoom', function(data) {
-                console.log(data);
-            });
+            var windowWidth = 400;            
+            var windowHeight = 350;
+            var screenRatio = 400/350;
+            var gemRatio = 1;
 
+            if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+                gemRatio = screen.width/windowWidth;
+                windowWidth = screen.width;
+                windowHeight = screen.width/screenRatio;   
+                console.log(gemRatio);
+                console.log(windowWidth);
+                console.log(windowHeight);             
+            }
+
+            var socket = io('http://localhost:8081');
             socket.on('clientReceive', function(data) {
                 console.log(data);
                 // socket.emit('received from server', {move: data});
             })
+            socket.on('whatGameRoom', function(data) {
+                console.log(data);
+            });
 
             // Example by https://twitter.com/awapblog
             // Updated by https://twitter.com/boldbigflank
 
-            var game = new Phaser.Game(400, 350, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create });
+            var game = new Phaser.Game(windowWidth, windowHeight, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create });
 
 
             var NUM_X = 6;
             var NUM_Y = 5;
-            var GEM_SIZE = 64;
+            var GEM_SIZE = 64*gemRatio;
             var GEM_SPACING = 2;
             var GEM_SIZE_SPACED = GEM_SIZE + GEM_SPACING;
             var BOARD_COLS;
