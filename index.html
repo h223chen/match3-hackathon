@@ -28,6 +28,7 @@
 
         var gems;
         var selectedGem = null;
+        var floatingGem = null;
         var selectedGemStartPos;
         var selectedGemTween;
         var tempShiftedGem = null;
@@ -75,6 +76,8 @@
 
         function releaseGem() {
             if (tempShiftedGem === null) {
+                floatingGem.destroy();
+                selectedGem.alpha = 1;
                 selectedGem = null;
                 return;
             }
@@ -86,7 +89,8 @@
             // 4) refill the board
         
             checkBoardAndKillGemMatches();
-
+            selectedGem.alpha = 1;
+            floatingGem.destroy();
             selectedGem = null;
             tempShiftedGem = null;
 
@@ -98,7 +102,8 @@
             // check if a selected gem should be moved and do it            
             if (selectedGem && pointer.isDown)
             {
-
+                floatingGem.x = x - 30;
+                floatingGem.y = y - 70;
                 var cursorGemPosX = getGemPos(x);
                 var cursorGemPosY = getGemPos(y);                
                 var newPoint = point(cursorGemPosX, cursorGemPosY);                    
@@ -194,7 +199,9 @@
         function selectGem(gem) {
 
             if (allowInput)
-            {
+            {   
+                floatingGem = game.add.sprite(game.input.x - 30, game.input.y - 70, gem.generateTexture());
+                gem.alpha = 0.2;
                 selectedGem = gem;
                 selectedGemStartPos.x = gem.posX;
                 selectedGemStartPos.y = gem.posY;
@@ -409,7 +416,7 @@
             // console.log('Tween ',gem.name,' from ',gem.posX, ',', gem.posY, ' to ', newPosX, ',', newPosY);
             if (durationMultiplier === null || typeof durationMultiplier === 'undefined')
             {
-                durationMultiplier = 1;
+                durationMultiplier = 0.25;
             }
 
             return game.add.tween(gem).to({x: newPosX  * GEM_SIZE_SPACED, y: newPosY * GEM_SIZE_SPACED}, 100 * durationMultiplier, Phaser.Easing.Linear.None, true);
