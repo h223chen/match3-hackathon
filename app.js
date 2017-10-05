@@ -2,8 +2,9 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
-app.use('/assets', express.static(__dirname + '/assets'));
 var fs = require('fs');
+app.use('/assets', express.static(__dirname + '/assets'));
+
 var Room = require('./room.js');
 var User = require('./user.js');
 var TurnBasedGameHandler = require('./turnBasedGameHandler.js');
