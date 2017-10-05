@@ -3,15 +3,12 @@
 class RealTimeGameHandler {
 
 	constructor(room) {
-		// hack to get gamehandler fields within socket scope
-		var game = this;
 		// initialize game fields
-		this.testCount = 0;
-
+		var testCount = 0;
 		var running = true;
 		var scoreboard = {};
 
-		var GAME_LENGTH = 10000;
+		var GAME_LENGTH = 60000;
 		var SCORE_MULTIPLIER = 50;
 
 		// initialize
@@ -31,7 +28,7 @@ class RealTimeGameHandler {
 
 			// test function			
 			socket.on('whatGameRoom', function() {
-				socket.emit('whatGameRoom', {"room" : room.id, "testCount" : game.testCount++});
+				socket.emit('whatGameRoom', {"room" : room.id, "testCount" : testCount++});
 			});
 
 		  	socket.on('move', function (data) {
@@ -47,6 +44,7 @@ class RealTimeGameHandler {
 		  	});
 		});
 		
+		// Game has finite length
 		setTimeout(function() {
 			console.log("Room #" + room.id + " game ended");
 			running = false;
