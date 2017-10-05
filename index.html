@@ -21,14 +21,6 @@
             var screenRatio = 400/350;
             var gemRatio = 1;
 
-            if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-                gemRatio = screen.width/windowWidth;
-                windowWidth = screen.width;
-                windowHeight = screen.width/screenRatio;   
-                console.log(gemRatio);
-                console.log(windowWidth);
-                console.log(windowHeight);             
-            }
 
             var socket = io();
             sr = socket;
