@@ -2,7 +2,8 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>hello phaser!</title>
+        <title>Gems</title>
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
         <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
@@ -32,10 +33,21 @@
                 console.log(data);
             });
 
+            // TODO MAKE WORK FOR MORE THAN 3 PLAYERS
+            socket.on('updateScoreboard', function(data) {
+                var myScore = data.scoreboard[socket.id];
+                var enemyScore = data.scoreboard[Object.keys(data.scoreboard).filter(k => k != socket.id)[0]];
+                $("#myScore").text(myScore);
+                $("#enemyScore").text(enemyScore);
+            });
+            socket.on('gameStart', function(data)) {
+                alert("START!");
+            }
+
             // Example by https://twitter.com/awapblog
             // Updated by https://twitter.com/boldbigflank
 
-            var game = new Phaser.Game(windowWidth, windowHeight, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create });
+            var game = new Phaser.Game(windowWidth, windowHeight, Phaser.CANVAS, document.getElementById('gems'), { preload: preload, create: create });
 
 
             var NUM_X = 6;
@@ -556,6 +568,9 @@
         };
 
     </script>
+    <div id="gems"></div>
+    <h2>Your Score: <span id='myScore'></span></h2>
+    <h2>Your Opponent's Score: <span id='enemyScore'></span></h2>
 
     </body>
 </html>
