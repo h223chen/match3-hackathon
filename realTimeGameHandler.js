@@ -1,3 +1,5 @@
+'use strict';
+
 class RealTimeGameHandler {
 
 	constructor(room) {

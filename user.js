@@ -1,3 +1,5 @@
+'use strict';
+
 class User {
 	// a User's id is their socketId
 	constructor(socket) {
