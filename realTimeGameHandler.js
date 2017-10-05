@@ -3,10 +3,8 @@
 class RealTimeGameHandler {
 
 	constructor(room) {
-		// hack to get gamehandler fields within socket scope
-		var game = this;
 		// initialize game fields
-		this.testCount = 0;
+		var testCount = 0;
 		// scoreboard
 		var scoreboard = {};
 
@@ -26,7 +24,7 @@ class RealTimeGameHandler {
 
 			// test function			
 			socket.on('whatGameRoom', function() {
-				socket.emit('whatGameRoom', {"room" : room.id, "testCount" : game.testCount++});
+				socket.emit('whatGameRoom', {"room" : room.id, "testCount" : testCount++});
 			});
 
 		  	socket.on('move', function (data) {
