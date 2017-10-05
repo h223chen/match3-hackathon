@@ -4,29 +4,48 @@ var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
 app.use('/assets', express.static(__dirname + '/assets'));
 var fs = require('fs');
+var Room = require('./room.js');
+var User = require('./user.js');
 
 // constants
 const ROOM_SIZE = 2;
 
-var rooms = [];
+
+// roomId -> Room
+var rooms = {};
+var roomIndex = 1;
+// socketId -> User;
+var connectedUsers = {};
 var matchmakingQueue = [];
-var connectedSocketIds = [];
+
 
 function setupConnection(socket) {
-	connectedSocketIds.push(socket.id);
-	console.log(socket.id + " connected.");
+	var user = new User(socket.id);
+	connectedUsers[socket.id] = user;
+	console.log(user.id + " connected.");
 
-	// add to queue
-	matchmakingQueue.push(socket.id);
+	// add to queue and create rooms
+	matchmakingQueue.push(user);
 	if (matchmakingQueue.length >= ROOM_SIZE) {
-		
+		var roomUsers = matchmakingQueue.slice(0, ROOM_SIZE);
+		var room = new Room(roomIndex, roomUsers);
+		rooms[room.id] = room;
 		matchmakingQueue.splice(0, ROOM_SIZE);
+		console.log("Created room #" + roomIndex + " with users " + roomUsers.map(u => u.id));
+		roomIndex++;
 	}
 
 	// disconnect logic
 	socket.on('disconnect', function() {
-	  console.log(socket.id + " disconnected.");
-	  connectedSocketIds.splice(connectedSocketIds.indexOf(socket.id), 1);
+	  var user = connectedUsers[socket.id];
+
+	  // delete user from room
+	  if (user.roomId in rooms) {
+	  	rooms[user.roomId].kickUser(user.id);
+	  }
+
+	  delete connectedUsers[user.id];
+	  console.log(user.id + " disconnected.");	  
 	});
 }
 
