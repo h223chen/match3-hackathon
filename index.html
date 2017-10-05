@@ -29,6 +29,11 @@
                 4 : "blue"
             }
 
+            var leftColumnKill = 0;
+            var rightColumnKill = 0;
+            var topRowKill = 0;
+            var bottomRowKill = 0;
+
             var socket = io();
             sr = socket;
             socket.on('clientReceive', function(data) {
@@ -109,8 +114,7 @@
                 var COLUMNS = "columns";
                 var ROWS = "rows";
 
-                // var conditionKeys = [COMBOS, RUNES, COLUMNS, ROWS];
-                var conditionKeys = [RUNES];
+                var conditionKeys = [COMBOS, RUNES, COLUMNS, ROWS];
                 var conditionKey = conditionKeys[Math.floor(Math.random() * conditionKeys.length)];
                 var randomColor = Math.floor(Math.random() * 6 - 1);
                 var randomColumnRow = Math.floor(Math.random() * 2)
@@ -198,12 +202,10 @@
                     if (!lastPoint) {
                         pathArray.push(newPoint);
                         lastPoint = newPoint;
-                        //console.log("SLIDEGEM: " + cursorGemPosX + ", " + cursorGemPosY);
                     } else {
                         if (lastPoint.getX() != cursorGemPosX || lastPoint.getY() != cursorGemPosY) {
                             pathArray.push(newPoint);
                             lastPoint = newPoint;
-                            //console.log("SLIDEGEM: " + cursorGemPosX + ", " + cursorGemPosY);
                         }
                     }
                                     
@@ -428,15 +430,39 @@
 
             // check whole board for matches
             function checkBoardAndKillGemMatches() {
-                var canKill = false;
+                var canKill = false;                
+                leftColumnKill = 0;
+                rightColumnKill = 0;
+                topRowKill = 0;
+                bottomRowKill = 0;
+
                 for (var i = 0; i < BOARD_COLS; i++)
                 {
+                    var tempRow = i + ": ";
                     for (var j = BOARD_ROWS - 1; j >= 0; j--)
                     {
                         var gem = getGem(i, j);
 
                         if (gem.dirty) { gem.dirty = false; }
-                        canKill = checkAndKillGemMatches(gem) || canKill;                    
+                        var tempCanKill = checkAndKillGemMatches(gem);
+                        canKill = tempCanKill || canKill;
+
+
+                        if (tempCanKill) {
+                            if (i ==0) {
+                                leftColumnKill ++;
+                            }
+                            if (i== BOARD_COLS-1) {
+                                rightColumnKill ++;
+                            }
+                            if (j ==0) {
+                                topRowKill ++;
+                            }
+                            if (j== BOARD_ROWS-1) {
+                                bottomRowKill ++;  
+                            }
+                        }
+                        tempRow += tempCanKill + "\t";
                     }
                 }
 
@@ -454,7 +480,6 @@
             // kill all gems from a starting position to an end position
             var numCombos = 0;
             var attackCondition = generateCondition();
-            console.log(attackCondition);
             var colorMap = {};
             function killGemRange(fromX, fromY, toX, toY) {                    
                 fromX = Phaser.Math.clamp(fromX, 0, BOARD_COLS - 1);
@@ -499,8 +524,7 @@
             }
 
             function tweenGemPos(gem, newPosX, newPosY, durationMultiplier) {
-                var midpointX = newPosX, midpointY = newPosY;
-                // console.log('Tween ',gem.name,' from ',gem.posX, ',', gem.posY, ' to ', newPosX, ',', newPosY);
+                var midpointX = newPosX, midpointY = newPosY;                
                 if (durationMultiplier === null || typeof durationMultiplier === 'undefined')
                 {
                     durationMultiplier = 0.75;
@@ -583,6 +607,14 @@
 
             }
 
+            function checkRowDissolved() {
+
+            }
+
+            function checkColumnDissolved() {
+
+            }
+
             // when the board has finished refilling, re-enable player input
             function boardRefilled() {
                 var canKill = false;
@@ -607,13 +639,20 @@
                     game.time.events.add(dropGemDuration * 100, refillBoard);
                     allowInput = false;
                 } else {
-                    var userObj = { numCombos: numCombos, colorMap: colorMap };
+                    var userObj = { 
+                        numCombos: numCombos, 
+                        colorMap: colorMap,
+                        dissolvedLeft: leftColumnKill == 5,
+                        dissolvedRight: rightColumnKill == 5,
+                        dissolvedTop: topRowKill == 6,
+                        dissolvedBottom: bottomRowKill == 6
+                    };
                     socket.emit('move', );
-                    console.log("Number of Combos: " + numCombos);
+                    // console.log("Number of Combos: " + numCombos);
                     
-                    console.log("Color Map :"); 
+                    //console.log("Color Map :"); 
                     for (var key in colorMap) {
-                        console.log(key + " : " + colorMap[key]);                    
+                        // console.log(key + " : " + colorMap[key]);                    
                     }
 
                     var attackConditionFulfilled = attackCondition.checkCondition(userObj);
@@ -622,6 +661,11 @@
                     numCombos = 0;
                     colorMap = {};
                     allowInput = true;
+
+                    leftColumnKill = 0;
+                    rightColumnKill = 0;
+                    topRowKill = 0;
+                    bottomRowKill = 0;
 
                     attackCondition = generateCondition();
                     console.log(attackCondition);
