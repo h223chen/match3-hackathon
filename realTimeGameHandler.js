@@ -30,7 +30,6 @@ class RealTimeGameHandler {
 			});
 
 		  	socket.on('move', function (data) {
-		  		console.log(data);
 			    socket.emit('clientReceive', {
 			    	message: "server received your move"
 			    });
