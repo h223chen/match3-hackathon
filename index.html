@@ -13,6 +13,7 @@
     <body>
 
     <script type="text/javascript">
+        var sr;
 
         window.onload = function() {
             var windowWidth = 400;            
@@ -29,7 +30,8 @@
                 console.log(windowHeight);             
             }
 
-            var socket = io('http://localhost:8081');
+            var socket = io();
+            sr = socket;
             socket.on('clientReceive', function(data) {
                 console.log(data);
                 // socket.emit('received from server', {move: data});
