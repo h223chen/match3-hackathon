@@ -50,6 +50,12 @@
                 $("#myScore").text("");
                 $("#enemyScore").text("");
             });
+            socket.on('gameEnd', function(data) {
+                $("#myScore").text("");
+                $("#enemyScore").text("");
+                game.input.deleteMoveCallback(slideGem, this);
+                console.log("Game end");
+            });
 
             // Example by https://twitter.com/awapblog
             // Updated by https://twitter.com/boldbigflank
