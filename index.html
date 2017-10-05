@@ -21,6 +21,13 @@
             var screenRatio = 400/350;
             var gemRatio = 1;
 
+            var colors = {
+                0 : "red",
+                1 : "orange",
+                2 : "green",
+                3 : "purple",
+                4 : "blue"
+            }
 
             var socket = io();
             sr = socket;
@@ -57,7 +64,7 @@
             var allowInput;
 
             var pathArray = [];
-            var lastPoint;
+            var lastPoint;            
 
             function preload() {
 
@@ -94,6 +101,65 @@
                         return "[" + this.posX + "," + this.posY + "]";
                     }
                 }
+            }
+
+            function generateCondition() {
+                var COMBOS = "6combos";
+                var RUNES = "6runes";
+                var COLUMNS = "columns";
+                var ROWS = "rows";
+
+                // var conditionKeys = [COMBOS, RUNES, COLUMNS, ROWS];
+                var conditionKeys = [RUNES];
+                var conditionKey = conditionKeys[Math.floor(Math.random() * conditionKeys.length)];
+                var randomColor = Math.floor(Math.random() * 6 - 1);
+                var randomColumnRow = Math.floor(Math.random() * 2)
+
+                var attackConditions = {
+                    "6combos" : {
+                        checkCondition: function(userObj) {
+                            if (userObj.numCombos > 6) {
+                                return true;
+                            }
+                            return false;
+                        },
+                        description: "make 6 or more combos"
+                    },
+                    "6runes": {
+                        checkCondition: function(userObj) {                            
+                            if (userObj.colorMap[randomColor] >= 6) {
+                                return true;
+                            } 
+                            return false;
+                        },
+                        description: "make 6 or more of " + colors[randomColor]
+                    },
+                    "columns": {
+                        checkCondition: function(userObj) {
+                            var conditionMet = randomColumnRow == 0 ? 
+                            userObj.dissolvedLeft : 
+                            userObj.dissolvedRight;
+
+                            return conditionMet;
+                        },
+                        description: "Dissolve runes on the " + (randomColumnRow == 0 ? "left" : "right") + " column"
+                    },
+                    "rows": {
+                       checkCondition: function(userObj) {
+                            var conditionMet = randomColumnRow == 0 ?
+                            userObj.dissolvedTop :
+                            userObj.dissolvedBottom;
+
+                            return conditionMet;
+                       },
+                       description: "Dissolve runes on the " + (randomColumnRow == 0 ? "top" : "bottom") + " row"
+                    }
+                }                
+
+                var condition = attackConditions[conditionKey];
+                condition.name = conditionKey;
+
+                return condition;
             }
 
             function releaseGem() {
@@ -387,6 +453,8 @@
 
             // kill all gems from a starting position to an end position
             var numCombos = 0;
+            var attackCondition = generateCondition();
+            console.log(attackCondition);
             var colorMap = {};
             function killGemRange(fromX, fromY, toX, toY) {                    
                 fromX = Phaser.Math.clamp(fromX, 0, BOARD_COLS - 1);
@@ -539,17 +607,24 @@
                     game.time.events.add(dropGemDuration * 100, refillBoard);
                     allowInput = false;
                 } else {
-                    socket.emit('move', { numCombos: numCombos, colorMap: colorMap });
+                    var userObj = { numCombos: numCombos, colorMap: colorMap };
+                    socket.emit('move', );
                     console.log("Number of Combos: " + numCombos);
                     
                     console.log("Color Map :"); 
                     for (var key in colorMap) {
                         console.log(key + " : " + colorMap[key]);                    
                     }
+
+                    var attackConditionFulfilled = attackCondition.checkCondition(userObj);
+                    console.log("attack condition fulfilled: " + attackConditionFulfilled);
                     
                     numCombos = 0;
                     colorMap = {};
                     allowInput = true;
+
+                    attackCondition = generateCondition();
+                    console.log(attackCondition);
                 }
             }
 
