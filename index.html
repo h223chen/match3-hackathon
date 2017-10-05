@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="UTF-8" />
         <title>hello phaser!</title>
         <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
@@ -16,14 +17,19 @@
         var sr;
 
         window.onload = function() {
-            var windowWidth = 400;            
-            var windowHeight = 350;
-            var screenRatio = 400/350;
-            var gemRatio = 1;
-
+            var windowWidth = window.innerWidth;            
+            var windowHeight = window.innerHeight;
+            if (windowWidth/windowHeight > 1.2){
+                windowWidth = windowHeight * 1.2
+            }
+            else {
+                windowHeight = windowWidth / 1.2
+            }
+            var gemRatio = windowHeight / 340;
 
             var socket = io();
             sr = socket;
+
             socket.on('clientReceive', function(data) {
                 console.log(data);
                 // socket.emit('received from server', {move: data});
@@ -40,8 +46,8 @@
 
             var NUM_X = 6;
             var NUM_Y = 5;
-            var GEM_SIZE = 64*gemRatio;
-            var GEM_SPACING = 2;
+            var GEM_SIZE = 64;
+            var GEM_SPACING = 2 * gemRatio + 64 * (gemRatio - 1);
             var GEM_SIZE_SPACED = GEM_SIZE + GEM_SPACING;
             var BOARD_COLS;
             var BOARD_ROWS;
@@ -196,6 +202,7 @@
                         gem.inputEnabled = true;
                         gem.events.onInputDown.add(selectGem, this);
                         gem.events.onInputUp.add(releaseGem, this);
+                        gem.scale.setTo(gemRatio,gemRatio);
                         randomizeGemColor(gem);
                         setGemPos(gem, i, j); // each gem has a position on the board
                         gem.kill();
@@ -502,6 +509,8 @@
                             gem = gems.getFirstDead();
                             gem.reset(i * GEM_SIZE_SPACED, -gemsMissingFromCol * GEM_SIZE_SPACED);
                             gem.dirty = true;
+                                                    gem.scale.setTo(gemRatio,gemRatio);
+
                             randomizeGemColor(gem);
                             setGemPos(gem, i, j);
                             tweenGemPos(gem, gem.posX, gem.posY, gemsMissingFromCol * 2);
