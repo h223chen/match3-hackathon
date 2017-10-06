@@ -13,8 +13,14 @@
     <script type="text/javascript">
         // lets browser access socket variable.
         var sr;
+        var name = "";
 
         window.onload = function() {
+            name = prompt("Please enter your username:", "");
+            loadGame();
+        }
+
+        var loadGame = function() {
 
             var colors = {
                 0 : "red",
@@ -43,8 +49,9 @@
             var enemyScoreText;
             var myScore = 0;
             var enemyScore = 0;
+            var enemyName;
 
-            var socket = io();
+            var socket = io({query: 'name=' + name});
             sr = socket;
 
             socket.on('clientReceive', function(data) {
@@ -70,10 +77,10 @@
                     var pointsTween = gameInfo.add.tween(scoreText);
                     pointsTween.to({ tweenedPoints: myScore}, 180, Phaser.Easing.Linear.None, true);
                     pointsTween.onUpdateCallback(function(){
-                        scoreText.setText('Score: '+Math.floor(scoreText.tweenedPoints));
+                        scoreText.setText(name + "\n"+Math.floor(scoreText.tweenedPoints));
                     }, gameInfo);
                     pointsTween.onComplete.addOnce(function(){
-                        scoreText.setText('Score: '+myScore);
+                        scoreText.setText(name + "\n"+myScore);
                     }, gameInfo);
                     pointsTween.start();
                 }
@@ -81,10 +88,10 @@
                     var enemyPointsTween = gameInfo.add.tween(enemyScoreText);
                     enemyPointsTween.to({ tweenedPoints: enemyScore}, 180, Phaser.Easing.Linear.None, true);
                     enemyPointsTween.onUpdateCallback(function(){
-                        enemyScoreText.setText('Enemy: '+Math.floor(enemyScoreText.tweenedPoints));
+                        enemyScoreText.setText(enemyName +"\n"+Math.floor(enemyScoreText.tweenedPoints));
                     }, gameInfo);
                     enemyPointsTween.onComplete.addOnce(function(){
-                        enemyScoreText.setText('Enemy: '+enemyScore);
+                        enemyScoreText.setText(enemyName + "\n"+enemyScore);
                     }, gameInfo);
                     enemyPointsTween.start();
                 }
@@ -96,6 +103,7 @@
                 updateScoreboard(data.scoreboard);
             });
             socket.on('gameStart', function(data) {
+                enemyName = data.names[Object.keys(data.names).filter(k => k != socket.id)[0]];
                 updateScoreboard(data.scoreboard);
             });
 
@@ -207,7 +215,7 @@
 
                 // create score textboxes
                 scoreText = gameInfo.add.text(10, 10, "Waiting for player two.", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#36D7B7' });
-                enemyScoreText = gameInfo.add.text(windowWidth * .68, 10, "Insert Coin", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#E29C45' });
+                enemyScoreText = gameInfo.add.text(windowWidth * .75, 10, "Insert Coin", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#E29C45' });
                 scoreText.tweenedPoints = 0;
                 enemyScoreText.tweenedPoints = 0;
 

@@ -5,6 +5,10 @@ class User {
 	constructor(socket) {
 		this.socket = socket;
 		this.id = socket.id;
+		this.name = socket.handshake.query.name;
+		if (!this.name) {
+			this.name = "Anonymous";
+		} 
 	}
 };
 

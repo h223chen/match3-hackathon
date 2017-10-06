@@ -6,7 +6,9 @@ class RealTimeGameHandler {
 		// initialize game fields
 		var testCount = 0;
 		var running = true;
+		// both userid key'd
 		var scoreboard = {};
+		var userNames = {};
 
 		var GAME_LENGTH = 60000;
 		var SCORE_MULTIPLIER = 50;
@@ -14,6 +16,7 @@ class RealTimeGameHandler {
 		// initialize
 		room.users.forEach(function(user) {
 			scoreboard[user.id] = 0;
+			userNames[user.id] = user.name;
 		});
 
 		// game logic
@@ -23,7 +26,8 @@ class RealTimeGameHandler {
 			// initialize game
 			socket.emit('gameStart', {
 				scoreboard: scoreboard,
-				gameLength: GAME_LENGTH
+				gameLength: GAME_LENGTH,
+				names: userNames
 			});
 
 			// test function			
