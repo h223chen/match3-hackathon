@@ -270,11 +270,16 @@
 
             }
 
-            // find a gem on the board according to its position on the board
-            function getGem(posX, posY) {
+            function getGemNull(posX, posY) {
+                 if (posX < 0 || posX > BOARD_COLS || posY < 0 || posY > BOARD_ROWS) {
+                    return null;
+                }
 
                 return gems.iterate("id", calcGemId(posX, posY), Phaser.Group.RETURN_CHILD);
-
+            }
+            // find a gem on the board according to its position on the board
+            function getGem(posX, posY) {               
+                return gems.iterate("id", calcGemId(posX, posY), Phaser.Group.RETURN_CHILD);
             }
 
             // convert world coordinates to board position
@@ -411,6 +416,42 @@
                 return canKill;
             }
 
+
+            function checkNeighborKillGroup(startGem) {
+
+                var curX = startGem.posX;
+                var curY = startGem.posY;
+                var curColor = startGem.frame;
+
+                var leftGem = getGemNull(curX-1, curY);
+                var rightGem = getGemNull(curX+1, curY);
+                var topGem = getGemNull(curX, curY-1);
+                var bottomGem = getGemNull(curX, curY+1);
+
+
+                if (leftGem && leftGem.frame === curColor && leftGem.gemKillGroup) {
+                    return leftGem.gemKillGroup;
+                }
+
+                if (rightGem && rightGem.frame === curColor && rightGem.gemKillGroup) {
+                    return rightGem.gemKillGroup;
+                }
+
+                if (topGem && topGem.frame === curColor && topGem.gemKillGroup) {
+                    return topGem.gemKillGroup;
+                }
+
+                if (bottomGem && bottomGem.frame === curColor && bottomGem.gemKillGroup) {
+                    return bottomGem.gemKillGroup;
+                }
+
+                return numCombos;
+            }
+
+            function checkPos(gem, x, y) {
+                return gem.posX === x && gem.posY === y;
+            }
+
             function killGemMatches(gem, vertical, horizontal) {
                 if (gem === null) { return; }
                 var canKill = false;
@@ -436,7 +477,7 @@
                     if(canKill){
                     // gemKillGroup++;
                         // removeKilledGems();
-                        gem.gemKillGroup = numCombos;
+                        gem.gemKillGroup = checkNeighborKillGroup(gem);
                         // tweenGemOpacity(gem, 0, 2);
                         allowInput = false;
                     }
@@ -455,7 +496,7 @@
                     // gemKillGroup++;
 
                         // removeKilledGems();
-                        gem.gemKillGroup = numCombos;
+                        gem.gemKillGroup = checkNeighborKillGroup(gem);
                         // tweenGemOpacity(gem, 0, 2);
                         allowInput = false;
                     }
@@ -480,17 +521,15 @@
                         if (canKillVertical || canKillHorizontal) {
                             allowInput = false;
                             canKill = true;
+                                    killGemMatches(gem, canKillVertical,canKillHorizontal);                                        
                             (function(gem, killCount, canKillVertical, canKillHorizontal) {
 
                                 game.time.events.add(delay, function() {
                                     
                                     // if (gem.posX < 0 || gem.posY < 0) { return; }
                                     
-                                    killGemMatches(gem, canKillVertical,canKillHorizontal);    
-                                    console.log(killCount, canKillVertical, canKillHorizontal, gem.posX, gem.posY);
-                                    if (gem.dead){
-                                        console.log("fading "+gem.name+" color "+getGemColor(gem)+" killgroup "+gem.gemKillGroup)
-                                        game.time.events.add(200*gem.gemKillGroup + 1, function(){
+                                    if (gem.dead){                                    
+                                        game.time.events.add(1000*gem.gemKillGroup , function(){
                                             tweenGemOpacity(gem, 0, 2);
                                         })
                                         
@@ -503,6 +542,20 @@
                         }                   
                     }
                 }
+
+                game.time.events.add(5000, function() {
+                    for (var i = 0; i < BOARD_COLS; i++)
+                    {
+                        var tempString = "";
+                        for (var j = BOARD_ROWS - 1; j >= 0; j--)
+                        {
+                            var gem = getGem(i, j);
+                            tempString += (gem.gemKillGroup ? gem.gemKillGroup : -1) + '\t';
+                        }
+                        console.log(i+"\t"+tempString);
+                    }
+                })
+                
 
                     // for (var i = 0; i < BOARD_COLS; i++)
                     // {
@@ -687,16 +740,16 @@
                 gemKillGroup = 0;
                 var delay = 500;
 
-                for (var i = 0; i < BOARD_COLS; i++)
-                {
-                    var tempString = "";
-                    for (var j = BOARD_ROWS - 1; j >= 0; j--)
-                    {
-                        var gem = getGem(i, j);
-                        tempString += gem.frame + '\t';
-                    }
-                    console.log(tempString);
-                }
+                // for (var i = 0; i < BOARD_COLS; i++)
+                // {
+                //     var tempString = "";
+                //     for (var j = BOARD_ROWS - 1; j >= 0; j--)
+                //     {
+                //         var gem = getGem(i, j);
+                //         tempString += gem.killgroup + '\t';
+                //     }
+                //     console.log(tempString);
+                // }
 
 
                 for (var i = 0; i < BOARD_COLS; i++)
