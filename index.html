@@ -81,15 +81,12 @@
             function preload() {
 
                 game.load.spritesheet("GEMS", "assets/sprites/diamonds32x5.png", GEM_SIZE, GEM_SIZE);
-
-<<<<<<< Updated upstream
-=======
                 game.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
                 game.load.audio('dissolve', 'assets/audio/dissolve.mp3')
                 game.load.audio('move', 'assets/audio/move.mp3')
 
                 game.load.spritesheet('vortex', 'assets/sprites/vortexSprite.png', 64, 64);
->>>>>>> Stashed changes
+
             }
 
             function create() {
@@ -105,8 +102,6 @@
 
                 game.input.addMoveCallback(slideGem, this);
 
-<<<<<<< Updated upstream
-=======
 
                 bigDissolveSound = game.add.audio('bigDissolve')
                 dissolveSound = game.add.audio('dissolve')
@@ -124,7 +119,6 @@
                 vortex.frame = 0;
                 vortex.animations.add('play', frames, 24, true);
                 vortex.animations.play('play');
->>>>>>> Stashed changes
             }
 
             function point(x, y) {
