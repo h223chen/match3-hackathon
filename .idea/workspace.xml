@@ -1,26 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f6611de3-0d7c-4cf3-8c26-8e9deb2a9c1f" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/Untitled-1.psd" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/Untitled-2.psd" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/audio/bigDissolve.mp3" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/sprites/cross64x64.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/audio/dissolve.mp3" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/audio/lightning.mp3" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/audio/move.mp3" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/audio/profit.mp3" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/audio/resolve.mp3" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/audio/resolve2.mp3" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/audio/victory.mp3" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/assets/audio/warning.mp3" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/asset-pack1.json" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/assets/asset-pack2.json" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/assets/sprites/diamonds32x5.png" afterPath="$PROJECT_DIR$/assets/sprites/diamonds32x5.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app.js" afterPath="$PROJECT_DIR$/app.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/realTimeGameHandler.js" afterPath="$PROJECT_DIR$/realTimeGameHandler.js" />
-    </list>
+    <list default="true" id="f6611de3-0d7c-4cf3-8c26-8e9deb2a9c1f" name="Default" comment="" />
     <ignored path="match3-hackathon.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -34,11 +15,17 @@
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
   </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FavoritesManager">
     <favorites_list name="match3-hackathon" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GradleLocalSettings">
+    <option name="externalProjectsViewState">
+      <projects_view />
+    </option>
   </component>
   <component name="JsBuildToolGruntFileManager" detection-done="true" />
   <component name="JsGulpfileManager">
@@ -199,12 +186,12 @@
       <created>1507299873344</created>
       <option name="number" value="Default" />
       <updated>1507299873344</updated>
-      <workItem from="1507299874590" duration="10000" />
+      <workItem from="1507299874590" duration="290000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="10000" />
+    <option name="totallyTimeSpent" value="290000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="22" width="1440" height="798" extended-state="6" />
@@ -214,6 +201,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
