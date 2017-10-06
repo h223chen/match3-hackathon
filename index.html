@@ -6,6 +6,7 @@
         <title>Gems</title>
         <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
         <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
+        <script src="/assets/shatter.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
   	    
@@ -76,6 +77,8 @@
 
             // Example by https://twitter.com/awapblog
             // Updated by https://twitter.com/boldbigflank
+
+            var gameInfo = new Phaser.Game(windowWidth, window.innerHeight - windowHeight, Phaser.CANVAS, document.getElementById('gems'));
 
             var game = new Phaser.Game(windowWidth, windowHeight, Phaser.CANVAS, document.getElementById('gems'), { preload: preload, create: create });
 
@@ -188,7 +191,7 @@
                 // check if a selected gem should be moved and do it            
                 if (selectedGem && pointer.isDown)
                 {
-                    floatingGem.x = x - 30;
+                    floatingGem.x = x - GEM_SIZE_SPACED / 2;
                     floatingGem.y = y - 70;
                     var cursorGemPosX = getGemPos(x);
                     var cursorGemPosY = getGemPos(y);                
@@ -313,7 +316,8 @@
 
                 if (allowInput && !isGemFrozen(gem))
                 {
-                    floatingGem = game.add.sprite(game.input.x - 30, game.input.y - 70, gem.generateTexture());
+                    floatingGem = game.add.sprite(game.input.x - GEM_SIZE_SPACED / 2, game.input.y - 70, gem.generateTexture());
+                    floatingGem.scale.setTo(1.1 * gemRatio, 1.1 * gemRatio);
                     gem.alpha = 0.2;
                     selectedGem = gem;
                     selectedGemStartPos.x = gem.posX;
@@ -623,20 +627,19 @@
                         {
                             gemsMissingFromCol++;
                             gem = gems.getFirstDead();
-                            gem.reset(i * GEM_SIZE_SPACED, -gemsMissingFromCol * GEM_SIZE_SPACED);
+                            gem.reset(i * GEM_SIZE_SPACED, (-6-gemsMissingFromCol) * GEM_SIZE_SPACED);
                             gem.dirty = true;
-                            gem.scale.setTo(gemRatio,gemRatio);
 
                             randomizeGemColor(gem);
                             setGemPos(gem, i, j);
-                            tweenGemPos(gem, gem.posX, gem.posY, gemsMissingFromCol * 2);
+                            tweenGemPos(gem, gem.posX, gem.posY, 4);
                         }
                     }
 
                     maxGemsMissingFromCol = Math.max(maxGemsMissingFromCol, gemsMissingFromCol);
                 }
 
-                game.time.events.add(maxGemsMissingFromCol * 2 * 100, boardRefilled);
+                game.time.events.add(600, boardRefilled);
 
             }
 
