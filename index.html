@@ -85,11 +85,19 @@
             var frozenGems = [];
             var pendingFrozenReq = 2;
 
+            var dissolveSound;
+            var bigDissolveSound;
+
             function preload() {
 
                 game.load.spritesheet("GEMS", "assets/sprites/diamonds32x5.png", GEM_SIZE, GEM_SIZE);
                 game.load.image("cross", "assets/sprites/cross64x64.png");
                 //game.load.image("ice", "assets/sprites/ice.jpg");
+
+                game.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
+                game.load.audio('dissolve', 'assets/audio/dissolve.mp3')
+                game.load.audio('move', 'assets/audio/move.mp3')
+
 
             }
 
@@ -105,6 +113,14 @@
                 allowInput = false;
 
                 game.input.addMoveCallback(slideGem, this);
+
+
+                bigDissolveSound = game.add.audio('bigDissolve')
+                dissolveSound = game.add.audio('dissolve')
+
+                bigDissolveSound.volume = 0.5;
+                dissolveSound.volume = 0.5;
+
             }
 
 
@@ -157,7 +173,7 @@
                     floatingGem.y = y - 70;
                     var cursorGemPosX = getGemPos(x);
                     var cursorGemPosY = getGemPos(y);                
-                    var newPoint = point(cursorGemPosX, cursorGemPosY);                
+                    var newPoint = point(cursorGemPosX, cursorGemPosY);
                     if (!lastPoint) {
                         pathArray.push(newPoint);
                         lastPoint = newPoint;
@@ -173,7 +189,7 @@
                     if (isGemFrozen(point(cursorGemPosX, cursorGemPosY))) {
                         releaseGem();
                     }
-                               
+
                     if (checkIfGemCanBeMovedHere(selectedGemStartPos.x, selectedGemStartPos.y, cursorGemPosX, cursorGemPosY))
                     {
                         if (cursorGemPosX !== selectedGem.posX || cursorGemPosY !== selectedGem.posY)
@@ -204,6 +220,10 @@
                             }
                             else
                             {
+                                var moveSound = game.add.audio('move')
+                                moveSound.volume = 0.5;
+                                moveSound.play();
+
                                 tweenGemPos(tempShiftedGem, selectedGem.posX, selectedGem.posY);
                                 swapGemPosition(selectedGem, tempShiftedGem);
                             }
@@ -492,6 +512,16 @@
 
             // move gems that have been killed off the board
             function removeKilledGems() {
+                var numKilledGems = 0;
+                for (var key in colorMap) {
+                    numKilledGems += colorMap[key];
+                }
+
+                if (numKilledGems > 15) {
+                    if (bigDissolveSound) bigDissolveSound.play();
+                } else {
+                    if (dissolveSound) dissolveSound.play();
+                }
 
                 gems.forEach(function(gem) {
                     if (!gem.alive) {
@@ -620,7 +650,7 @@
                     
                     console.log("Color Map :"); 
                     for (var key in colorMap) {
-                        console.log(key + " : " + colorMap[key]);                    
+                        console.log(key + " : " + colorMap[key]);
                     }
                     
                     numCombos = 0;
