@@ -8,5 +8,5 @@ Install node if you don't have it
 
 `npm install`
 
-`http-server`
+`node app.js`
 
