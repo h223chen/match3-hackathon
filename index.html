@@ -6,6 +6,7 @@
         <title>Gems</title>
         <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
         <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
+        <script src="/assets/shatter.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
   	    
@@ -143,7 +144,7 @@
                 // check if a selected gem should be moved and do it            
                 if (selectedGem && pointer.isDown)
                 {
-                    floatingGem.x = x - 30;
+                    floatingGem.x = x - GEM_SIZE_SPACED / 2;
                     floatingGem.y = y - 70;
                     var cursorGemPosX = getGemPos(x);
                     var cursorGemPosY = getGemPos(y);                
@@ -240,8 +241,8 @@
 
                 if (allowInput)
                 {
-                    floatingGem = game.add.sprite(game.input.x - 30, game.input.y - 70, gem.generateTexture());
-                    floatingGem.scale.setTo(1.1, 1.1);
+                    floatingGem = game.add.sprite(game.input.x - GEM_SIZE_SPACED / 2, game.input.y - 70, gem.generateTexture());
+                    floatingGem.scale.setTo(1.1 * gemRatio, 1.1 * gemRatio);
                     gem.alpha = 0.2;
                     selectedGem = gem;
                     selectedGemStartPos.x = gem.posX;
