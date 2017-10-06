@@ -97,7 +97,7 @@
             // Example by https://twitter.com/awapblog
             // Updated by https://twitter.com/boldbigflank
 
-            var gameInfo = new Phaser.Game(windowWidth, window.innerHeight - windowHeight, Phaser.CANVAS, document.getElementById('gems'));
+            var gameInfo = new Phaser.Game(windowWidth, window.innerHeight - windowHeight, Phaser.CANVAS, document.getElementById('gems'), { preload: preloadInfo, create: createInfo});
 
             var game = new Phaser.Game(windowWidth, windowHeight, Phaser.CANVAS, document.getElementById('gems'), { preload: preload, create: create });
 
@@ -126,10 +126,33 @@
             var frozenGems = [];
             var pendingFrozenReq = 0;
 
+            var moveSound;
             var dissolveSound;
             var bigDissolveSound;
             var lightningSound;
             var victorySound;
+
+            function preloadInfo() {
+                gameInfo.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
+                gameInfo.load.audio('dissolve', 'assets/audio/dissolve.mp3')
+                gameInfo.load.audio('move', 'assets/audio/move.mp3')
+                gameInfo.load.audio('lightning', 'assets/audio/lightning.mp3')
+                gameInfo.load.audio('victory', 'assets/audio/victory.mp3')
+            }
+
+            function createInfo() {
+                bigDissolveSound = gameInfo.add.audio('bigDissolve')
+                dissolveSound = gameInfo.add.audio('dissolve')
+                moveSound = gameInfo.add.audio('move')
+                lightningSound = gameInfo.add.audio('lightning')
+                victorySound = gameInfo.add.audio('victory')
+
+                bigDissolveSound.volume = 0.5;
+                dissolveSound.volume = 0.5;
+                moveSound.volume = 0.5;
+                lightningSound.volume = 0.5;
+                victorySound.volume = 0.5;
+            }
 
             function preload() {
 
@@ -137,11 +160,7 @@
                 game.load.image("cross", "assets/sprites/cross64x64.png");
                 //game.load.image("ice", "assets/sprites/ice.jpg");
 
-                game.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
-                game.load.audio('dissolve', 'assets/audio/dissolve.mp3')
-                game.load.audio('move', 'assets/audio/move.mp3')
-                game.load.audio('lightning', 'assets/audio/lightning.mp3')
-                game.load.audio('victory', 'assets/audio/victory.mp3')
+
 
             }
 
@@ -157,18 +176,6 @@
                 allowInput = false;
 
                 game.input.addMoveCallback(slideGem, this);
-
-
-                bigDissolveSound = game.add.audio('bigDissolve')
-                dissolveSound = game.add.audio('dissolve')
-                lightningSound = game.add.audio('lightning')
-                victorySound = game.add.audio('victory')
-
-                bigDissolveSound.volume = 0.5;
-                dissolveSound.volume = 0.5;
-                lightningSound.volume = 0.5;
-                victorySound.volume = 0.5;
-
             }
 
 
@@ -324,8 +331,6 @@
                             }
                             else
                             {
-                                var moveSound = game.add.audio('move')
-                                moveSound.volume = 0.5;
                                 moveSound.play();
 
                                 tweenGemPos(tempShiftedGem, selectedGem.posX, selectedGem.posY);
