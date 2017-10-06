@@ -8,7 +8,7 @@ class RealTimeGameHandler {
 		var running = true;
 		var scoreboard = {};
 
-		var GAME_LENGTH = 5000;
+		var GAME_LENGTH = 60000;
 		var SCORE_MULTIPLIER = 50;
 
 		// initialize
