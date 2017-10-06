@@ -239,6 +239,7 @@
 
                 game.load.spritesheet('vortex', 'assets/sprites/vortexSprite.png', 64, 64);
                 game.load.spritesheet('vortexRed', 'assets/sprites/vortexRed.png', 64, 64);
+                gameInfo.load.spritesheet('attack', 'assets/sprites/attack.png', 522, 522);
 
                 game.load.image("cross", "assets/sprites/cross64x64.png");
                 //game.load.image("ice", "assets/sprites/ice.jpg");
@@ -996,6 +997,19 @@
                     while(pendingFrozenReq > 0) {
                         if (lightningSound) lightningSound.play();
                         gameInfo.camera.flash(0xff0000, 500);
+                        var frames = [];
+
+                        for (var i=0; i<6; i++) {
+                            frames.push(i);
+                        }
+                        var animation = {};
+                        animation = gameInfo.add.sprite(0, 0, "attack");
+                        animation.alpha = 1;
+                        animation.scale.setTo(gemRatio,gemRatio);
+
+                        animation.frame = 0;
+                        animation.animations.add('play2', frames, 6, false);
+                        animation.animations.play('play2');
                         freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1), true);
                         pendingFrozenReq--;
                     }
@@ -1003,9 +1017,24 @@
                     while(pendingMustDisolvedGems > 0) {
                         if (lightningSound) lightningSound.play();
                         gameInfo.camera.flash(0xff0000, 500);
+
+                        var frames = [];
+
+                        for (var i=0; i<6; i++) {
+                            frames.push(i);
+                        }
+                        var animation = {};
+                        animation = gameInfo.add.sprite(0, 0, "attack");
+                        animation.alpha = 1;
+                        animation.scale.setTo(gemRatio,gemRatio);
+
+                        animation.frame = 0;
+                        animation.animations.add('play3', frames, 6, false);
+                        animation.animations.play('play3');
                         freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1), false);
                         pendingMustDisolvedGems--;
                     }
+
                     allowInput = true;
 
                     leftColumnKill = 0;
