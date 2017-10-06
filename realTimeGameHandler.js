@@ -52,9 +52,16 @@ class RealTimeGameHandler {
 
 				    	// Send attacks to other players
 					    if (data.attackConditionFulfilled && socket.id != user.socket.id) {
-					    	user.socket.emit('frozenRequest', {
-					    		attackStrength: 2
-					    	});
+					    	if (data.attackCondition === 'rows' || data.attackCondition === 'columns') {
+						    	user.socket.emit('mustDisolveRequest', {
+						    		attackStrength: 1
+						    	});
+					    	}
+					    	else {
+					    		user.socket.emit('frozenRequest', {
+						    		attackStrength: 2
+						    	});
+					    	}
 					    }
 				    });
 

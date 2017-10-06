@@ -77,7 +77,6 @@
                 console.log("increase frozen count to " + pendingFrozenReq);
             });
 
-
             socket.on('mustDisolveRequest', function(data) {
                 mustDisolveRequest += data.attackStrength;
                 console.log("increase mustDisolve count to " + mustDisolveRequest);
@@ -969,7 +968,8 @@
                         socket.emit('move', {
                             numCombos: numCombos,
                             colorMap: colorMap,
-                            attackConditionFulfilled: attackConditionFulfilled
+                            attackConditionFulfilled: attackConditionFulfilled,
+                            attackCondition: attackCondition.name
                         });
                     }
                     else {
