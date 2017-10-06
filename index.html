@@ -137,7 +137,9 @@
                 updateScoreboard(data.scoreboard);
             });
             socket.on('gameStart', function(data) {
-                music.play();
+                if (music) {
+                    music.play();
+                }
                 enemyName = data.names[Object.keys(data.names).filter(k => k != socket.id)[0]];
                 updateScoreboard(data.scoreboard);
                 initializeTimer(data.gameLength);
@@ -234,7 +236,10 @@
                 victorySound.volume = 0.5;
                 resolveSound.volume = 0.5;
                 profitSound.volume = 0.5;
-                warningSound.volume = 0.5;            }
+                warningSound.volume = 0.5;           
+
+                socket.emit('ready');
+            }
 
             function preload() {
 
@@ -276,7 +281,6 @@
                 bigDissolveSound.volume = 0.5;
                 dissolveSound.volume = 0.5;
 
-
                 // create score textboxes
                 scoreText = gameInfo.add.text(10, 10, "Searching for match", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#36D7B7' });
                 enemyScoreText = gameInfo.add.text(windowWidth * .75, 10, "Insert Coin", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#E29C45', align: 'right'});
@@ -284,7 +288,6 @@
                 enemyScoreText.tweenedPoints = 0;
 
                 attackConditionText = gameInfo.add.text(10, window.innerHeight - windowHeight*1.15, "", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#ddd' });
-
             }
 
             function point(x, y) {
