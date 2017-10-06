@@ -529,8 +529,8 @@
                                     // if (gem.posX < 0 || gem.posY < 0) { return; }
                                     
                                     if (gem.dead){                                    
-                                        game.time.events.add(1000*gem.gemKillGroup , function(){
-                                            tweenGemOpacity(gem, 0, 2);
+                                        game.time.events.add(600*gem.gemKillGroup , function(){
+                                            tweenGemOpacity(gem, 0, 1);
                                         })
                                         
                                     }
