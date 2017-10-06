@@ -137,6 +137,7 @@
                 updateScoreboard(data.scoreboard);
             });
             socket.on('gameStart', function(data) {
+                music.play();
                 enemyName = data.names[Object.keys(data.names).filter(k => k != socket.id)[0]];
                 updateScoreboard(data.scoreboard);
                 initializeTimer(data.gameLength);
@@ -190,6 +191,7 @@
             var mustDisolvedGems = [];
             var pendingMustDisolvedGems = 0;
 
+            var music;
             var moveSound;
             var dissolveSound;
             var bigDissolveSound;
@@ -200,6 +202,8 @@
             var warningSound;
 
             function preloadInfo() {
+                gameInfo.load.audio('bgm', 'assets/audio/bgm.mp3')
+
                 gameInfo.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
                 gameInfo.load.audio('dissolve', 'assets/audio/dissolve.mp3')
                 gameInfo.load.audio('move', 'assets/audio/move.mp3')
@@ -211,6 +215,7 @@
             }
 
             function createInfo() {
+                music = gameInfo.add.audio('bgm')
                 bigDissolveSound = gameInfo.add.audio('bigDissolve')
                 dissolveSound = gameInfo.add.audio('dissolve')
                 moveSound = gameInfo.add.audio('move')
@@ -220,7 +225,7 @@
                 profitSound = gameInfo.add.audio('profit')
                 warningSound = gameInfo.add.audio('warning')
 
-
+                bgmSound.volume = 0.5;
                 bigDissolveSound.volume = 0.5;
                 dissolveSound.volume = 0.5;
                 moveSound.volume = 0.5;
