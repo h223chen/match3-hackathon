@@ -5,8 +5,11 @@ class RealTimeGameHandler {
 	constructor(room) {
 		// initialize game fields
 		var testCount = 0;
-		// scoreboard
+		var running = true;
 		var scoreboard = {};
+
+		var GAME_LENGTH = 60000;
+		var SCORE_MULTIPLIER = 50;
 
 		// initialize
 		room.users.forEach(function(user) {
@@ -19,7 +22,8 @@ class RealTimeGameHandler {
 
 			// initialize game
 			socket.emit('gameStart', {
-				scoreboard: scoreboard
+				scoreboard: scoreboard,
+				gameLength: GAME_LENGTH
 			});
 
 			// test function			
@@ -28,19 +32,28 @@ class RealTimeGameHandler {
 			});
 
 		  	socket.on('move', function (data) {
-			    socket.emit('clientReceive', {
-			    	message: "server received your move"
-			    });
-
-			    // Calculate score
-			    scoreboard[socket.id] += data.numCombos;
-			    room.users.forEach(function(user) {
-					user.socket.emit('updateScoreboard', {
-				    	scoreboard: scoreboard
-				    });
-			    });  
+		  		if (running) {
+				    // Calculate score
+				    scoreboard[socket.id] += data.numCombos * SCORE_MULTIPLIER;
+				    room.users.forEach(function(user) {
+						user.socket.emit('updateScoreboard', {
+					    	scoreboard: scoreboard
+					    });
+				    });  
+				}
 		  	});
 		});
+		
+		// Game has finite length
+		setTimeout(function() {
+			console.log("Room #" + room.id + " game ended");
+			running = false;
+			room.users.forEach(function(user) {
+				user.socket.emit('gameEnd', {
+					scoreboard: scoreboard
+				});
+			});
+		}, GAME_LENGTH)
 	}
 }
 
