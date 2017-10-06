@@ -36,10 +36,20 @@ class RealTimeGameHandler {
 				    // Calculate score
 				    scoreboard[socket.id] += data.numCombos * SCORE_MULTIPLIER;
 				    room.users.forEach(function(user) {
+				    	// Update scoreboard
 						user.socket.emit('updateScoreboard', {
 					    	scoreboard: scoreboard
 					    });
-				    });  
+
+				    	// Send attacks to other players
+					    if (data.attackConditionFulfilled && socket.id != user.socket.id) {
+					    	user.socket.emit('frozenRequest', {
+					    		attackStrength: 1
+					    	});
+					    }
+				    });
+
+
 				}
 		  	});
 		});
