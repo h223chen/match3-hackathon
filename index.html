@@ -152,9 +152,7 @@
                 gameOverText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
 
                 if (victorySound && victory) victorySound.play();
-                setTimeout(function() {
-                    game.paused = true;
-                }, 5000);
+                game.paused = true;
                 console.log("Game end");
             });
 
