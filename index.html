@@ -342,12 +342,17 @@
                 var curX = startGem.posX + moveX;
                 var curY = startGem.posY + moveY;
                 var count = 0;
+                
+                if (getGem(curX, curY) == null) { return count; }
 
                 while (curX >= 0 && curY >= 0 && curX < BOARD_COLS && curY < BOARD_ROWS && getGemColor(getGem(curX, curY)) === getGemColor(startGem))
                 {
+
                     count++;
                     curX += moveX;
                     curY += moveY;
+
+                    if (getGem(curX, curY) == null) { return count; }    
                 }
 
                 return count;
@@ -367,14 +372,50 @@
             // count how many gems of the same color are above, below, to the left and right
             // if there are more than 3 matched horizontally or vertically, kill those gems
             // if no match was made, move the gems back into their starting positions
-            function checkAndKillGemMatches(gem) {
 
+            function checkCanKillVerticalGemMatches(gem) {
                 if (gem === null) { return; }
 
                 var canKill = false;
 
                 // process the selected gem
+                if (!gem) { return false; }
+                var countUp = countSameColorGems(gem, 0, -1);
+                var countDown = countSameColorGems(gem, 0, 1);                            
+                var countVert = countUp + countDown + 1;
 
+                if (countVert >= MATCH_MIN) {
+                    canKill = true;
+                }
+
+                return canKill;
+            }
+
+            function checkCanKillHorizontalGemMatches(gem) {
+                if (gem === null) { return; }
+
+                var canKill = false;
+
+                // process the selected gem
+                if (!gem) { return false; }
+                var countLeft = countSameColorGems(gem, -1, 0);
+                var countRight = countSameColorGems(gem, 1, 0);
+                var countHoriz = countLeft + countRight + 1;
+
+                if (countHoriz >= MATCH_MIN) {
+                    canKill = true;
+                }
+
+                return canKill;
+            }
+
+            function killGemMatches(gem, vertical, horizontal) {                
+                if (gem === null) { return; }
+
+                var canKill = false;
+
+                // process the selected gem
+                if (!gem) { return false; }
                 var countUp = countSameColorGems(gem, 0, -1);
                 var countDown = countSameColorGems(gem, 0, 1);
                 var countLeft = countSameColorGems(gem, -1, 0);
@@ -383,42 +424,72 @@
                 var countHoriz = countLeft + countRight + 1;
                 var countVert = countUp + countDown + 1;
 
-                if (countVert >= MATCH_MIN)
-                {
-                    killGemRange(gem.posX, gem.posY - countUp, gem.posX, gem.posY + countDown);
+                if (countVert >= MATCH_MIN) {
+                    // tweenGemOpacity(gem, 0);
+                    killGemRange(gem.posX, gem.posY - countUp, gem.posX, gem.posY + countDown)
+
                     canKill = true;
+
+                    if(canKill){                                            
+                        removeKilledGems();
+                        allowInput = false;
+                    }
+                    
+                    
                 }
 
-                if (countHoriz >= MATCH_MIN)
-                {
+                if (countHoriz >= MATCH_MIN) {                   
+                    // tweenGemOpacity(gem, 0);
                     killGemRange(gem.posX - countLeft, gem.posY, gem.posX + countRight, gem.posY);
                     canKill = true;
+
+                    if(canKill){
+                        removeKilledGems();
+                        allowInput = false;
+                    }
+                    
                 }
-
-                return canKill;
-
             }
 
             // check whole board for matches
             function checkBoardAndKillGemMatches() {
                 var canKill = false;
+                var killCount = 0;
+                var delay = 500;
                 for (var i = 0; i < BOARD_COLS; i++)
                 {
                     for (var j = BOARD_ROWS - 1; j >= 0; j--)
                     {
                         var gem = getGem(i, j);
 
-                        if (gem.dirty) { gem.dirty = false; }
-                        canKill = checkAndKillGemMatches(gem) || canKill;                    
+                        var canKillHorizontal = checkCanKillHorizontalGemMatches(gem);
+                        var canKillVertical = checkCanKillVerticalGemMatches(gem);
+                        if (canKillVertical || canKillHorizontal) {
+                            allowInput = false;
+                            canKill = true;
+                            (function(gem, killCount, canKillVertical, canKillHorizontal) {
+
+                                game.time.events.add(delay*killCount, function() {
+                                    
+                                    // if (gem.posX < 0 || gem.posY < 0) { return; }
+                                    killGemMatches(gem, canKillVertical,canKillHorizontal);    
+                                    console.log(killCount, canKillVertical, canKillHorizontal, gem.posX, gem.posY);
+                                });
+                                
+                            }(gem, killCount, canKillVertical, canKillHorizontal));
+
+                            killCount ++;
+                        }                   
                     }
                 }
 
                 if(canKill){
-                    removeKilledGems();
-                    var dropGemDuration = dropGems();
-                    // delay board refilling until all existing gems have dropped down
-                    game.time.events.add(dropGemDuration * 100, refillBoard);
-                    allowInput = false;
+                    game.time.events.add(delay*killCount, function() {
+                        var dropGemDuration = dropGems();
+                        // delay board refilling until all existing gems have dropped down
+                        game.time.events.add(dropGemDuration * 100, refillBoard);
+                        allowInput = false;
+                    });        
                 } else {
                     allowInput = true;
                 }
@@ -437,7 +508,7 @@
                 for (var i = fromX; i <= toX; i++) {
                     for (var j = fromY; j <= toY; j++) {
                         var gem = getGem(i, j);
-                        if (gem.alive) {
+                        if (gem && gem.alive) {
                             var color = getGemColor(gem);
                             if (colorMap[color]) {
                                 colorMap[color] = colorMap[color] + 1;
@@ -453,30 +524,42 @@
                 }
 
                 if (!alreadyDead) {
+                    var numKilledGems = 0;
+                    for (var key in colorMap) {
+                        numKilledGems += colorMap[key];
+                    }
+
+                    if (numKilledGems > 15) {
+                        if (bigDissolveSound) bigDissolveSound.play();    
+                    } else {
+                        if (dissolveSound) dissolveSound.play();
+                    } 
                     numCombos ++; 
                 }
                 
             }
 
             // move gems that have been killed off the board
-            function removeKilledGems() {
-                var numKilledGems = 0;
-                for (var key in colorMap) {
-                    numKilledGems += colorMap[key];
-                }
-
-                if (numKilledGems > 15) {
-                    if (bigDissolveSound) bigDissolveSound.play();    
-                } else {
-                    if (dissolveSound) dissolveSound.play();
-                }                
-
+            function removeKilledGems() {                    
                 gems.forEach(function(gem) {
                     if (!gem.alive) {
                         setGemPos(gem, -1,-1);
                     }
                 });
 
+            }
+
+            function tweenGemOpacity(gem, newOpacity, durationMultiplier) {
+                if (durationMultiplier === null || typeof durationMultiplier === 'undefined')
+                {
+                    durationMultiplier = 0.75;
+                }
+
+                return game.add.tween(gem).to({
+                    alpha: newOpacity                    
+                }, 100 * durationMultiplier, Phaser.Easing.Linear.None, true).interpolation(function(v, k){
+                        return Phaser.Math.bezierInterpolation(v, k);
+                });
             }
 
             function tweenGemPos(gem, newPosX, newPosY, durationMultiplier) {
@@ -569,26 +652,66 @@
             // when the board has finished refilling, re-enable player input
             function boardRefilled() {
                 var canKill = false;
+                var killCount = 0;
+                var delay = 500;
+
                 for (var i = 0; i < BOARD_COLS; i++)
                 {
+                    var tempString = "";
                     for (var j = BOARD_ROWS - 1; j >= 0; j--)
                     {
                         var gem = getGem(i, j);
+                        tempString += gem.frame + '\t';
+                    }
+                    console.log(tempString);
+                }
 
-                        if (gem.dirty)
+
+                for (var i = 0; i < BOARD_COLS; i++)
+                {
+                    var tempString = "";
+                    for (var j = BOARD_ROWS - 1; j >= 0; j--)
+                    {
+                        var gem = getGem(i, j);
+                        
+                        if (gem && gem.dirty)
                         {
                             gem.dirty = false;
-                            canKill = checkAndKillGemMatches(gem) || canKill;
+
+                            var canKillHorizontal = checkCanKillHorizontalGemMatches(gem);
+                            var canKillVertical = checkCanKillVerticalGemMatches(gem);
+                            if (canKillVertical || canKillHorizontal) {
+                                allowInput = false;
+                                canKill = true;
+                                (function(gem, killCount, canKillVertical, canKillHorizontal) {
+
+                                    game.time.events.add(delay*killCount, function() {
+                                        if (gem.posX < 0 || gem.posY < 0) { 
+                                            return; 
+                                        } 
+                                        killGemMatches(gem, canKillVertical,canKillHorizontal); 
+                                        if (gem.posX < 0 || gem.posY < 0) { 
+                                            return; 
+                                        }   
+                                        console.log(killCount, canKillVertical, canKillHorizontal, gem.posX, gem.posY);
+                                    });
+                                    
+                                }(gem, killCount, canKillVertical, canKillHorizontal));
+
+                                killCount ++;
+                            }
+                            
                         }
                     }
                 }
 
-                if(canKill){
-                    removeKilledGems();
-                    var dropGemDuration = dropGems();
-                    // delay board refilling until all existing gems have dropped down
-                    game.time.events.add(dropGemDuration * 100, refillBoard);
-                    allowInput = false;
+                if (canKill) {  
+                    game.time.events.add(delay*killCount, function() {
+                        var dropGemDuration = dropGems();
+                        // delay board refilling until all existing gems have dropped down
+                        game.time.events.add(dropGemDuration * 100, refillBoard);
+                        allowInput = false;
+                    });                    
                 } else {
                     socket.emit('move', { numCombos: numCombos, colorMap: colorMap });
                     console.log("Number of Combos: " + numCombos);
@@ -602,6 +725,11 @@
                     colorMap = {};
                     allowInput = true;
                 }
+            }
+
+            function sleep(seconds) {
+              var e = new Date().getTime() + (seconds * 1000);
+              while (new Date().getTime() <= e) {}
             }
 
         };
