@@ -51,6 +51,7 @@
             var myScore = 0;
             var enemyScore = 0;
             var enemyName;
+            var attackConditionText;
 
             var socket = io({query: 'name=' + name});
             sr = socket;
@@ -242,6 +243,7 @@
                 scoreText.tweenedPoints = 0;
                 enemyScoreText.tweenedPoints = 0;
 
+                attackConditionText = gameInfo.add.text(10, window.innerHeight - windowHeight*1.15, "", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#ddd' });;
             }
 
             function point(x, y) {
@@ -279,7 +281,7 @@
                             }
                             return false;
                         },
-                        description: "make 6 or more combos"
+                        description: "Make 6 or more combos"
                     },
                     "6runes": {
                         checkCondition: function(userObj) {                            
@@ -288,7 +290,7 @@
                             } 
                             return false;
                         },
-                        description: "make 6 or more of " + colors[randomColor]
+                        description: "Make 6 or more of " + colors[randomColor]
                     },
                     "columns": {
                         checkCondition: function(userObj) {
@@ -837,6 +839,8 @@
 
             }
 
+            var canAttack = true;
+
             // when the board has finished refilling, re-enable player input
             function boardRefilled() {
                 var canKill = false;
@@ -874,6 +878,7 @@
                     console.log("attack condition fulfilled: " + attackConditionFulfilled);
                     if (attackConditionFulfilled) {
                         profitSound.play();
+                        canAttack = false;
                     }       
 
                     socket.emit('move', {
@@ -897,8 +902,13 @@
                     topRowKill = 0;
                     bottomRowKill = 0;
 
-                    attackCondition = generateCondition();
-                    console.log(attackCondition);
+                    if (canAttack) {
+                        attackCondition = generateCondition();    
+                    }
+                    attackConditionText.setText((canAttack ? "[    ]  " : "[ x ]  ") + attackCondition.description);
+                    if (!canAttack) {
+                        canAttack = true;
+                    }
                 }
             }
 
