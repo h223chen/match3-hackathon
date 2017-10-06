@@ -248,14 +248,17 @@
 
                 game.load.image("cross", "assets/sprites/cross64x64.png");
                 //game.load.image("ice", "assets/sprites/ice.jpg");
+                game.load.image('background', 'assets/sprites/gembg.jpg');
 
 
             }
 
             function create() {
-
+                game.add.tileSprite(0, 0, windowWidth, windowHeight, 'background');
                 // fill the screen with as many gems as possible
                 spawnBoard();
+
+                
 
                 // currently selected gem starting position. used to stop player form moving gems too far.
                 selectedGemStartPos = { x: 0, y: 0 };
