@@ -61,6 +61,7 @@
             var enemyScore = 0;
             var enemyName;
             var attackConditionText;
+            var timerText;
 
             var socket = io({query: 'name=' + name});
             sr = socket;
@@ -82,9 +83,26 @@
                 console.log("increase mustDisolve count to " + pendingMustDisolvedGems);
             });
 
-            function tween(isMyScore, score){
-
+            function tickTimer() {
+                if (timerText.text != 0) {
+                    timerText.setText(timerText.text - 1);
+                    setTimeout(tickTimer, 1000);
+                }
             }
+
+            function initializeTimer(gameLength) {
+                timerText = gameInfo.add.text(0, 10, "", { font: "bold " +Math.floor(windowWidth / 15) + "px Helvetica", fill: "#ddd", boundsAlignH: "center", boundsAlignV: "middle" });
+                timerText.setTextBounds(0, 0, windowWidth, Math.floor(windowWidth / 14));
+                timerText.setText((gameLength / 1000) - 1);
+                console.log(timerText.text);
+                if (gameLength >= 10000) {
+                    setTimeout(function() {
+                        warningSound.play();
+                    }, gameLength - 10000);
+                }
+                tickTimer();
+            }
+
             function updateScoreboard(scoreboard) {
                 myScore = scoreboard[socket.id];
                 enemyScore = scoreboard[Object.keys(scoreboard).filter(k => k != socket.id)[0]];
@@ -104,6 +122,7 @@
                     enemyPointsTween.to({ tweenedPoints: enemyScore}, 180, Phaser.Easing.Linear.None, true);
                     enemyPointsTween.onUpdateCallback(function(){
                         enemyScoreText.setText(enemyName +"\n"+Math.floor(enemyScoreText.tweenedPoints));
+                        enemyScoreText.x = windowWidth - enemyScoreText.width - 12;
                     }, gameInfo);
                     enemyPointsTween.onComplete.addOnce(function(){
                         enemyScoreText.setText(enemyName + "\n"+enemyScore);
@@ -120,11 +139,7 @@
             socket.on('gameStart', function(data) {
                 enemyName = data.names[Object.keys(data.names).filter(k => k != socket.id)[0]];
                 updateScoreboard(data.scoreboard);
-                if (data.gameLength >= 10000) {
-                    setTimeout(function() {
-                        warningSound.play();
-                    }, data.gameLength - 10000);
-                }
+                initializeTimer(data.gameLength);
             });
 
             // end the game
@@ -137,9 +152,7 @@
                 gameOverText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
 
                 if (victorySound && victory) victorySound.play();
-                setTimeout(function() {
-                    game.paused = true;
-                }, 5000);
+                game.paused = true;
                 console.log("Game end");
             });
 
@@ -255,12 +268,13 @@
 
 
                 // create score textboxes
-                scoreText = gameInfo.add.text(10, 10, "Waiting for player two.", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#36D7B7' });
-                enemyScoreText = gameInfo.add.text(windowWidth * .75, 10, "Insert Coin", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#E29C45' });
+                scoreText = gameInfo.add.text(10, 10, "Searching for match", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#36D7B7' });
+                enemyScoreText = gameInfo.add.text(windowWidth * .75, 10, "Insert Coin", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#E29C45', align: 'right'});
                 scoreText.tweenedPoints = 0;
                 enemyScoreText.tweenedPoints = 0;
 
-                attackConditionText = gameInfo.add.text(10, window.innerHeight - windowHeight*1.15, "", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#ddd' });;
+                attackConditionText = gameInfo.add.text(10, window.innerHeight - windowHeight*1.15, "", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#ddd' });
+
             }
 
             function point(x, y) {

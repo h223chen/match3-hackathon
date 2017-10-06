@@ -10,7 +10,7 @@ class RealTimeGameHandler {
 		var scoreboard = {};
 		var userNames = {};
 
-		var GAME_LENGTH = 60000;
+		var GAME_LENGTH = 60000 + 2000; // 2 second buffer
 		var SCORE_MULTIPLIER = 50;
 
 		// initialize
@@ -19,16 +19,31 @@ class RealTimeGameHandler {
 			userNames[user.id] = user.name;
 		});
 
+		// start game, wait one second to let user finish rendering phaser, set timeout for game end
+		setTimeout(function() {
+			room.users.forEach(function(user) {
+				var socket = user.socket;
+				socket.emit('gameStart', {
+					scoreboard: scoreboard,
+					gameLength: GAME_LENGTH,
+					names: userNames
+				});
+			});
+			//  Game has finite length
+			setTimeout(function() {
+				console.log("Room #" + room.id + " game ended");
+				running = false;
+				room.users.forEach(function(user) {
+					user.socket.emit('gameEnd', {
+						scoreboard: scoreboard
+					});
+				});
+			}, GAME_LENGTH);
+		}, 1000);
+
 		// game logic
 		room.users.forEach(function(user) {
 			var socket = user.socket;
-
-			// initialize game
-			socket.emit('gameStart', {
-				scoreboard: scoreboard,
-				gameLength: GAME_LENGTH,
-				names: userNames
-			});
 
 			// test function			
 			socket.on('whatGameRoom', function() {
@@ -70,16 +85,6 @@ class RealTimeGameHandler {
 		  	});
 		});
 		
-		// Game has finite length
-		setTimeout(function() {
-			console.log("Room #" + room.id + " game ended");
-			running = false;
-			room.users.forEach(function(user) {
-				user.socket.emit('gameEnd', {
-					scoreboard: scoreboard
-				});
-			});
-		}, GAME_LENGTH);
 	}
 }
 
