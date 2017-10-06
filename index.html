@@ -178,8 +178,6 @@
                 game.input.addMoveCallback(slideGem, this);
             }
 
-
-
             function point(x, y) {
                 return {
                     posX: x,
@@ -591,7 +589,6 @@
                 } else {
                     allowInput = true;
                 }
-            }
 
             // kill all gems from a starting position to an end position
             var numCombos = 0;
@@ -718,8 +715,6 @@
                 return dropRowCountMax;
 
             }
-
-
 
             // look for any empty spots on the board and spawn new gems in their place that fall down from above
             function refillBoard() {

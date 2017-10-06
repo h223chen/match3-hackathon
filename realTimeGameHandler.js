@@ -68,7 +68,7 @@ class RealTimeGameHandler {
 					scoreboard: scoreboard
 				});
 			});
-		}, GAME_LENGTH)
+		}, GAME_LENGTH);
 	}
 }
 
