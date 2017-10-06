@@ -38,6 +38,10 @@
             socket.on('whatGameRoom', function(data) {
                 console.log(data);
             });
+            socket.on('frozonRequest', function(data) {
+                pendingFrozenReq++;
+                console.log("increase frozen count to " + pendingFrozenReq);
+            });
 
             // TODO MAKE WORK FOR MORE THAN 3 PLAYERS
             socket.on('updateScoreboard', function(data) {
@@ -78,12 +82,17 @@
             var pathArray = [];
             var lastPoint;
 
+            var frozenGems = [];
+            var pendingFrozenReq = 2;
+
             var dissolveSound;
             var bigDissolveSound;
 
             function preload() {
 
                 game.load.spritesheet("GEMS", "assets/sprites/diamonds32x5.png", GEM_SIZE, GEM_SIZE);
+                game.load.image("cross", "assets/sprites/cross64x64.png");
+                //game.load.image("ice", "assets/sprites/ice.jpg");
 
                 game.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
                 game.load.audio('dissolve', 'assets/audio/dissolve.mp3')
@@ -114,6 +123,8 @@
 
             }
 
+
+
             function point(x, y) {
                 return {
                     posX: x,
@@ -131,6 +142,7 @@
             }
 
             function releaseGem() {
+                if (floatingGem == null) return;
                 floatingGem.destroy();
                 if (tempShiftedGem === null) {                    
                     selectedGem.alpha = 1;
@@ -154,7 +166,6 @@
             }
 
             function slideGem(pointer, x, y) {
-
                 // check if a selected gem should be moved and do it            
                 if (selectedGem && pointer.isDown)
                 {
@@ -162,7 +173,7 @@
                     floatingGem.y = y - 70;
                     var cursorGemPosX = getGemPos(x);
                     var cursorGemPosY = getGemPos(y);                
-                    var newPoint = point(cursorGemPosX, cursorGemPosY);                    
+                    var newPoint = point(cursorGemPosX, cursorGemPosY);
                     if (!lastPoint) {
                         pathArray.push(newPoint);
                         lastPoint = newPoint;
@@ -174,7 +185,11 @@
                             //console.log("SLIDEGEM: " + cursorGemPosX + ", " + cursorGemPosY);
                         }
                     }
-                                    
+
+                    if (isGemFrozen(point(cursorGemPosX, cursorGemPosY))) {
+                        releaseGem();
+                    }
+
                     if (checkIfGemCanBeMovedHere(selectedGemStartPos.x, selectedGemStartPos.y, cursorGemPosX, cursorGemPosY))
                     {
                         if (cursorGemPosX !== selectedGem.posX || cursorGemPosY !== selectedGem.posY)
@@ -204,7 +219,7 @@
                                 tempShiftedGem = null;
                             }
                             else
-                            {                     
+                            {
                                 var moveSound = game.add.audio('move')
                                 moveSound.volume = 0.5;
                                 moveSound.play();
@@ -254,10 +269,30 @@
                 tempShiftedGem = null;
             }
 
+            function freezeGemAt(indexX, indexY) {
+                var freezeGem = new Object();
+                freezeGem.coordinate = point(indexX, indexY);
+
+                freezeGem.image = game.add.image(indexX * GEM_SIZE_SPACED, indexY * GEM_SIZE_SPACED, "cross");
+                freezeGem.image.alpha = 0.6;
+                freezeGem.image.scale.setTo(gemRatio,gemRatio);
+
+                frozenGems.push(freezeGem);
+            }
+
+            function isGemFrozen(point) {
+                for (var i = 0; i < frozenGems.length; i++) {
+                    if (point.posX == frozenGems[i].coordinate.posX && point.posY == frozenGems[i].coordinate.posY) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
             // select a gem and remember its starting position
             function selectGem(gem) {
 
-                if (allowInput)
+                if (allowInput && !isGemFrozen(gem))
                 {
                     floatingGem = game.add.sprite(game.input.x - 30, game.input.y - 70, gem.generateTexture());
                     gem.alpha = 0.2;
@@ -445,6 +480,7 @@
                                 colorMap[color] = 1;
                             }
 
+                            removeFrozenGems(gem);
                             gem.kill();
                             alreadyDead = false;
                         }
@@ -458,6 +494,22 @@
                 
             }
 
+            // remove from frozen gem list if it get dissolved
+            function removeFrozenGems(gem) {
+                var idx = -1;
+
+                for (var i = 0; i < frozenGems.length; i++) {
+                    if (frozenGems[i].coordinate.posX == gem.posX && frozenGems[i].coordinate.posY == gem.posY) {
+                        idx = i;
+                    }
+                }
+
+                if (idx >= 0) {
+                    frozenGems[idx].image.destroy();
+                    frozenGems.splice(idx, 1);
+                }
+            }
+
             // move gems that have been killed off the board
             function removeKilledGems() {
                 var numKilledGems = 0;
@@ -466,10 +518,10 @@
                 }
 
                 if (numKilledGems > 15) {
-                    if (bigDissolveSound) bigDissolveSound.play();    
+                    if (bigDissolveSound) bigDissolveSound.play();
                 } else {
                     if (dissolveSound) dissolveSound.play();
-                }                
+                }
 
                 gems.forEach(function(gem) {
                     if (!gem.alive) {
@@ -508,6 +560,7 @@
                 for (var i = 0; i < BOARD_COLS; i++)
                 {
                     var dropRowCount = 0;
+                    var freezingCellRows = [];
 
                     for (var j = BOARD_ROWS - 1; j >= 0; j--)
                     {
@@ -532,6 +585,8 @@
 
             }
 
+
+
             // look for any empty spots on the board and spawn new gems in their place that fall down from above
             function refillBoard() {
 
@@ -551,7 +606,7 @@
                             gem = gems.getFirstDead();
                             gem.reset(i * GEM_SIZE_SPACED, -gemsMissingFromCol * GEM_SIZE_SPACED);
                             gem.dirty = true;
-                                                    gem.scale.setTo(gemRatio,gemRatio);
+                            gem.scale.setTo(gemRatio,gemRatio);
 
                             randomizeGemColor(gem);
                             setGemPos(gem, i, j);
@@ -600,6 +655,11 @@
                     
                     numCombos = 0;
                     colorMap = {};
+
+                    while(pendingFrozenReq > 0) {
+                        freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1));
+                        pendingFrozenReq--;
+                    }
                     allowInput = true;
                 }
             }
