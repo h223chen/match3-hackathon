@@ -78,6 +78,8 @@
             // Example by https://twitter.com/awapblog
             // Updated by https://twitter.com/boldbigflank
 
+            var gameInfo = new Phaser.Game(windowWidth, window.innerHeight - windowHeight, Phaser.CANVAS, document.getElementById('gems'));
+
             var game = new Phaser.Game(windowWidth, windowHeight, Phaser.CANVAS, document.getElementById('gems'), { preload: preload, create: create });
 
 
