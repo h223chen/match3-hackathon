@@ -1,8 +1,10 @@
 <!doctype html>
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="UTF-8" />
-        <title>hello phaser!</title>
+        <title>Gems</title>
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
         <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
@@ -10,16 +12,13 @@
   	
 </script>
     </head>
-    <body>
+    <body style="margin:0">
 
     <script type="text/javascript">
+        // lets browser access socket variable.
         var sr;
 
         window.onload = function() {
-            var windowWidth = 400;            
-            var windowHeight = 350;
-            var screenRatio = 400/350;
-            var gemRatio = 1;
 
             var colors = {
                 0 : "red",
@@ -34,8 +33,22 @@
             var topRowKill = 0;
             var bottomRowKill = 0;
 
+            var windowWidth = window.innerWidth;            
+            var windowHeight = window.innerHeight;
+            if (windowWidth/windowHeight > 1.2){
+                windowWidth = windowHeight * 1.2
+            }
+            else {
+                windowHeight = windowWidth / 1.2
+            }
+            var gemRatio = windowHeight / 340;
+            var scoreText;
+            var myScore;
+            var enemyScore;
+
             var socket = io();
             sr = socket;
+
             socket.on('clientReceive', function(data) {
                 console.log(data);
                 // socket.emit('received from server', {move: data});
@@ -43,17 +56,48 @@
             socket.on('whatGameRoom', function(data) {
                 console.log(data);
             });
+            socket.on('frozonRequest', function(data) {
+                pendingFrozenReq++;
+                console.log("increase frozen count to " + pendingFrozenReq);
+            });
+
+            function updateScoreboard(scoreboard) {
+                myScore = scoreboard[socket.id];
+                enemyScore = scoreboard[Object.keys(scoreboard).filter(k => k != socket.id)[0]];
+                $("#myScore").text(myScore);
+                $("#enemyScore").text(enemyScore);
+            }
+
+            // TODO MAKE WORK FOR MORE THAN 3 PLAYERS
+            socket.on('updateScoreboard', function(data) {
+                updateScoreboard(data.scoreboard);
+            });
+            socket.on('gameStart', function(data) {
+                $("#myScore").text("0");
+                $("#enemyScore").text("0");
+            });
+
+            // end the game
+            socket.on('gameEnd', function(data) {
+                updateScoreboard(data.scoreboard);
+                var gameOverTextStyle = { boundsAlignH : "center", boundsAlignV: "middle", fill: "#FFF", font: "bold " + (windowWidth / 10)+ "px Helvetica" };
+                gameOverText = game.add.text(0, 0, (myScore > enemyScore ? "VICTORY" : "DEFEAT"), gameOverTextStyle);
+                gameOverText.setTextBounds(0, 0, windowWidth, windowHeight);
+                gameOverText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
+                game.paused = true;
+                console.log("Game end");
+            });
 
             // Example by https://twitter.com/awapblog
             // Updated by https://twitter.com/boldbigflank
 
-            var game = new Phaser.Game(windowWidth, windowHeight, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create });
+            var game = new Phaser.Game(windowWidth, windowHeight, Phaser.CANVAS, document.getElementById('gems'), { preload: preload, create: create });
 
 
             var NUM_X = 6;
             var NUM_Y = 5;
-            var GEM_SIZE = 64*gemRatio;
-            var GEM_SPACING = 2;
+            var GEM_SIZE = 64;
+            var GEM_SPACING = 2 * gemRatio + 64 * (gemRatio - 1);
             var GEM_SIZE_SPACED = GEM_SIZE + GEM_SPACING;
             var BOARD_COLS;
             var BOARD_ROWS;
@@ -71,9 +115,22 @@
             var pathArray = [];
             var lastPoint;            
 
+            var frozenGems = [];
+            var pendingFrozenReq = 2;
+
+            var dissolveSound;
+            var bigDissolveSound;
+
             function preload() {
 
                 game.load.spritesheet("GEMS", "assets/sprites/diamonds32x5.png", GEM_SIZE, GEM_SIZE);
+                game.load.image("cross", "assets/sprites/cross64x64.png");
+                //game.load.image("ice", "assets/sprites/ice.jpg");
+
+                game.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
+                game.load.audio('dissolve', 'assets/audio/dissolve.mp3')
+                game.load.audio('move', 'assets/audio/move.mp3')
+
 
             }
 
@@ -90,7 +147,16 @@
 
                 game.input.addMoveCallback(slideGem, this);
 
+
+                bigDissolveSound = game.add.audio('bigDissolve')
+                dissolveSound = game.add.audio('dissolve')
+
+                bigDissolveSound.volume = 0.5;
+                dissolveSound.volume = 0.5;
+
             }
+
+
 
             function point(x, y) {
                 return {
@@ -167,6 +233,7 @@
             }
 
             function releaseGem() {
+                if (floatingGem == null) return;
                 floatingGem.destroy();
                 if (tempShiftedGem === null) {                    
                     selectedGem.alpha = 1;
@@ -190,7 +257,6 @@
             }
 
             function slideGem(pointer, x, y) {
-
                 // check if a selected gem should be moved and do it            
                 if (selectedGem && pointer.isDown)
                 {
@@ -198,7 +264,7 @@
                     floatingGem.y = y - 70;
                     var cursorGemPosX = getGemPos(x);
                     var cursorGemPosY = getGemPos(y);                
-                    var newPoint = point(cursorGemPosX, cursorGemPosY);                    
+                    var newPoint = point(cursorGemPosX, cursorGemPosY);
                     if (!lastPoint) {
                         pathArray.push(newPoint);
                         lastPoint = newPoint;
@@ -208,7 +274,11 @@
                             lastPoint = newPoint;
                         }
                     }
-                                    
+
+                    if (isGemFrozen(point(cursorGemPosX, cursorGemPosY))) {
+                        releaseGem();
+                    }
+
                     if (checkIfGemCanBeMovedHere(selectedGemStartPos.x, selectedGemStartPos.y, cursorGemPosX, cursorGemPosY))
                     {
                         if (cursorGemPosX !== selectedGem.posX || cursorGemPosY !== selectedGem.posY)
@@ -239,6 +309,10 @@
                             }
                             else
                             {
+                                var moveSound = game.add.audio('move')
+                                moveSound.volume = 0.5;
+                                moveSound.play();
+
                                 tweenGemPos(tempShiftedGem, selectedGem.posX, selectedGem.posY);
                                 swapGemPosition(selectedGem, tempShiftedGem);
                             }
@@ -264,6 +338,7 @@
                         gem.inputEnabled = true;
                         gem.events.onInputDown.add(selectGem, this);
                         gem.events.onInputUp.add(releaseGem, this);
+                        gem.scale.setTo(gemRatio,gemRatio);
                         randomizeGemColor(gem);
                         setGemPos(gem, i, j); // each gem has a position on the board
                         gem.kill();
@@ -283,10 +358,30 @@
                 tempShiftedGem = null;
             }
 
+            function freezeGemAt(indexX, indexY) {
+                var freezeGem = new Object();
+                freezeGem.coordinate = point(indexX, indexY);
+
+                freezeGem.image = game.add.image(indexX * GEM_SIZE_SPACED, indexY * GEM_SIZE_SPACED, "cross");
+                freezeGem.image.alpha = 0.6;
+                freezeGem.image.scale.setTo(gemRatio,gemRatio);
+
+                frozenGems.push(freezeGem);
+            }
+
+            function isGemFrozen(point) {
+                for (var i = 0; i < frozenGems.length; i++) {
+                    if (point.posX == frozenGems[i].coordinate.posX && point.posY == frozenGems[i].coordinate.posY) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
             // select a gem and remember its starting position
             function selectGem(gem) {
 
-                if (allowInput)
+                if (allowInput && !isGemFrozen(gem))
                 {
                     floatingGem = game.add.sprite(game.input.x - 30, game.input.y - 70, gem.generateTexture());
                     gem.alpha = 0.2;
@@ -499,6 +594,7 @@
                                 colorMap[color] = 1;
                             }
 
+                            removeFrozenGems(gem);
                             gem.kill();
                             alreadyDead = false;
                         }
@@ -512,8 +608,34 @@
                 
             }
 
+            // remove from frozen gem list if it get dissolved
+            function removeFrozenGems(gem) {
+                var idx = -1;
+
+                for (var i = 0; i < frozenGems.length; i++) {
+                    if (frozenGems[i].coordinate.posX == gem.posX && frozenGems[i].coordinate.posY == gem.posY) {
+                        idx = i;
+                    }
+                }
+
+                if (idx >= 0) {
+                    frozenGems[idx].image.destroy();
+                    frozenGems.splice(idx, 1);
+                }
+            }
+
             // move gems that have been killed off the board
             function removeKilledGems() {
+                var numKilledGems = 0;
+                for (var key in colorMap) {
+                    numKilledGems += colorMap[key];
+                }
+
+                if (numKilledGems > 15) {
+                    if (bigDissolveSound) bigDissolveSound.play();
+                } else {
+                    if (dissolveSound) dissolveSound.play();
+                }
 
                 gems.forEach(function(gem) {
                     if (!gem.alive) {
@@ -551,6 +673,7 @@
                 for (var i = 0; i < BOARD_COLS; i++)
                 {
                     var dropRowCount = 0;
+                    var freezingCellRows = [];
 
                     for (var j = BOARD_ROWS - 1; j >= 0; j--)
                     {
@@ -575,6 +698,8 @@
 
             }
 
+
+
             // look for any empty spots on the board and spawn new gems in their place that fall down from above
             function refillBoard() {
 
@@ -594,6 +719,8 @@
                             gem = gems.getFirstDead();
                             gem.reset(i * GEM_SIZE_SPACED, -gemsMissingFromCol * GEM_SIZE_SPACED);
                             gem.dirty = true;
+                            gem.scale.setTo(gemRatio,gemRatio);
+
                             randomizeGemColor(gem);
                             setGemPos(gem, i, j);
                             tweenGemPos(gem, gem.posX, gem.posY, gemsMissingFromCol * 2);
@@ -647,19 +774,18 @@
                         dissolvedTop: topRowKill == 6,
                         dissolvedBottom: bottomRowKill == 6
                     };
-                    socket.emit('move', );
-                    // console.log("Number of Combos: " + numCombos);
-                    
-                    //console.log("Color Map :"); 
-                    for (var key in colorMap) {
-                        // console.log(key + " : " + colorMap[key]);                    
-                    }
+                    socket.emit('move', {numCombos: numCombos, colorMap: colorMap});                    
 
                     var attackConditionFulfilled = attackCondition.checkCondition(userObj);
                     console.log("attack condition fulfilled: " + attackConditionFulfilled);
                     
                     numCombos = 0;
                     colorMap = {};
+
+                    while(pendingFrozenReq > 0) {
+                        freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1));
+                        pendingFrozenReq--;
+                    }
                     allowInput = true;
 
                     leftColumnKill = 0;
@@ -675,6 +801,9 @@
         };
 
     </script>
+    <div id="gems"></div>
+    <h2>Your Score: <span id='myScore'>Waiting for game to start...</span></h2>
+    <h2>Your Opponent's Score: <span id='enemyScore'>Waiting for game to start...</span></h2>
 
     </body>
 </html>
