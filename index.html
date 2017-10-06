@@ -271,7 +271,7 @@
             }
 
             function getGemNull(posX, posY) {
-                 if (posX < 0 || posX > BOARD_COLS || posY < 0 || posY > BOARD_ROWS) {
+                 if (posX < 0 || posX >= BOARD_COLS || posY < 0 || posY >= BOARD_ROWS) {
                     return null;
                 }
 
