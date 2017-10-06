@@ -34,7 +34,12 @@ class RealTimeGameHandler {
 		  	socket.on('move', function (data) {
 		  		if (running) {
 				    // Calculate score
-				    scoreboard[socket.id] += data.numCombos * SCORE_MULTIPLIER;
+				    var colorScore = 0;
+				    Object.keys(data.colorMap).forEach(function(colorKey) {
+				    	colorScore += data.colorMap[colorKey];
+				    });
+
+				    scoreboard[socket.id] += (data.numCombos * colorScore * SCORE_MULTIPLIER);
 				    room.users.forEach(function(user) {
 				    	// Update scoreboard
 						user.socket.emit('updateScoreboard', {
@@ -44,7 +49,7 @@ class RealTimeGameHandler {
 				    	// Send attacks to other players
 					    if (data.attackConditionFulfilled && socket.id != user.socket.id) {
 					    	user.socket.emit('frozenRequest', {
-					    		attackStrength: 1
+					    		attackStrength: 2
 					    	});
 					    }
 				    });
