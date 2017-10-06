@@ -981,12 +981,14 @@
 
                     while(pendingFrozenReq > 0) {
                         if (lightningSound) lightningSound.play();
+                        gameInfo.camera.flash(0xff0000, 500);
                         freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1), true);
                         pendingFrozenReq--;
                     }
 
                     while(pendingMustDisolvedGems > 0) {
                         if (lightningSound) lightningSound.play();
+                        gameInfo.camera.flash(0xff0000, 500);
                         freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1), false);
                         pendingMustDisolvedGems--;
                     }
