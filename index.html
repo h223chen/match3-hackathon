@@ -145,6 +145,7 @@
 
             // end the game
             socket.on('gameEnd', function(data) {
+                music.volume = 0;
                 updateScoreboard(data.scoreboard);
                 var victory = myScore > enemyScore;
                 var gameOverTextStyle = { boundsAlignH : "center", boundsAlignV: "middle", fill: "#FFF", font: "bold " + (windowWidth / 10)+ "px Helvetica" };
@@ -225,7 +226,7 @@
                 profitSound = gameInfo.add.audio('profit')
                 warningSound = gameInfo.add.audio('warning')
 
-                bgmSound.volume = 0.5;
+                music.volume = 0.5;
                 bigDissolveSound.volume = 0.5;
                 dissolveSound.volume = 0.5;
                 moveSound.volume = 0.5;
