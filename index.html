@@ -78,8 +78,8 @@
             });
 
             socket.on('mustDisolveRequest', function(data) {
-                mustDisolveRequest += data.attackStrength;
-                console.log("increase mustDisolve count to " + mustDisolveRequest);
+                pendingMustDisolvedGems += data.attackStrength;
+                console.log("increase mustDisolve count to " + pendingMustDisolvedGems);
             });
 
             function tween(isMyScore, score){
