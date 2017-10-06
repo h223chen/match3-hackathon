@@ -50,8 +50,9 @@ function setupConnection(socket) {
 	  	rooms[user.roomId].kickUser(user.id);
 	  }
 
+	  matchmakingQueue = matchmakingQueue.filter(u => u.id != user.id);
 	  delete connectedUsers[user.id];
-	  console.log(user.id + " disconnected.");	  
+	  console.log(user.id + " disconnected.");
 	});
 }
 
