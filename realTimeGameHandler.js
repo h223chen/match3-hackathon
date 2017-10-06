@@ -8,7 +8,7 @@ class RealTimeGameHandler {
 		var running = true;
 		var scoreboard = {};
 
-		var GAME_LENGTH = 60000;
+		var GAME_LENGTH = 5000;
 		var SCORE_MULTIPLIER = 50;
 
 		// initialize
@@ -36,10 +36,20 @@ class RealTimeGameHandler {
 				    // Calculate score
 				    scoreboard[socket.id] += data.numCombos * SCORE_MULTIPLIER;
 				    room.users.forEach(function(user) {
+				    	// Update scoreboard
 						user.socket.emit('updateScoreboard', {
 					    	scoreboard: scoreboard
 					    });
-				    });  
+
+				    	// Send attacks to other players
+					    if (data.attackConditionFulfilled && socket.id != user.socket.id) {
+					    	user.socket.emit('frozenRequest', {
+					    		attackStrength: 1
+					    	});
+					    }
+				    });
+
+
 				}
 		  	});
 		});

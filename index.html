@@ -56,8 +56,8 @@
             socket.on('whatGameRoom', function(data) {
                 console.log(data);
             });
-            socket.on('frozonRequest', function(data) {
-                pendingFrozenReq++;
+            socket.on('frozenRequest', function(data) {
+                pendingFrozenReq += data.attackStrength;
                 console.log("increase frozen count to " + pendingFrozenReq);
             });
 
@@ -80,11 +80,16 @@
             // end the game
             socket.on('gameEnd', function(data) {
                 updateScoreboard(data.scoreboard);
+                var victory = myScore > enemyScore;
                 var gameOverTextStyle = { boundsAlignH : "center", boundsAlignV: "middle", fill: "#FFF", font: "bold " + (windowWidth / 10)+ "px Helvetica" };
-                gameOverText = game.add.text(0, 0, (myScore > enemyScore ? "VICTORY" : "DEFEAT"), gameOverTextStyle);
+                gameOverText = game.add.text(0, 0, (victory ? "VICTORY" : "DEFEAT"), gameOverTextStyle);
                 gameOverText.setTextBounds(0, 0, windowWidth, windowHeight);
                 gameOverText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
-                game.paused = true;
+
+                if (victorySound && victory) victorySound.play();
+                setTimeout(function() {
+                    game.paused = true;
+                }, 5000);
                 console.log("Game end");
             });
 
@@ -116,7 +121,7 @@
             var lastPoint;            
 
             var frozenGems = [];
-            var pendingFrozenReq = 2;
+            var pendingFrozenReq = 0;
 
             var dissolveSound;
             var bigDissolveSound;
@@ -130,7 +135,8 @@
                 game.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
                 game.load.audio('dissolve', 'assets/audio/dissolve.mp3')
                 game.load.audio('move', 'assets/audio/move.mp3')
-
+                game.load.audio('lightning', 'assets/audio/lightning.mp3')
+                game.load.audio('victory', 'assets/audio/victory.mp3')
 
             }
 
@@ -150,9 +156,13 @@
 
                 bigDissolveSound = game.add.audio('bigDissolve')
                 dissolveSound = game.add.audio('dissolve')
+                lightningSound = game.add.audio('lightning')
+                victorySound = game.add.audio('victory')
 
                 bigDissolveSound.volume = 0.5;
                 dissolveSound.volume = 0.5;
+                lightningSound.volume = 0.5;
+                victorySound.volume = 0.5;
 
             }
 
@@ -774,15 +784,21 @@
                         dissolvedTop: topRowKill == 6,
                         dissolvedBottom: bottomRowKill == 6
                     };
-                    socket.emit('move', {numCombos: numCombos, colorMap: colorMap});                    
 
                     var attackConditionFulfilled = attackCondition.checkCondition(userObj);
-                    console.log("attack condition fulfilled: " + attackConditionFulfilled);
+                    console.log("attack condition fulfilled: " + attackConditionFulfilled);       
+
+                    socket.emit('move', {
+                        numCombos: numCombos,
+                        colorMap: colorMap,
+                        attackConditionFulfilled: attackConditionFulfilled
+                    });             
                     
                     numCombos = 0;
                     colorMap = {};
 
                     while(pendingFrozenReq > 0) {
+                        if (lightningSound) lightningSound.play();
                         freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1));
                         pendingFrozenReq--;
                     }
