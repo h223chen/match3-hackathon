@@ -98,6 +98,11 @@
             });
             socket.on('gameStart', function(data) {
                 updateScoreboard(data.scoreboard);
+                if (data.gameLength >= 10000) {
+                    setTimeout(function() {
+                        warningSound.play();
+                    }, data.gameLength - 10000);
+                }
             });
 
             // end the game
@@ -153,6 +158,9 @@
             var bigDissolveSound;
             var lightningSound;
             var victorySound;
+            var resolveSound;
+            var profitSound;
+            var warningSound;
 
             function preloadInfo() {
                 gameInfo.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
@@ -160,6 +168,9 @@
                 gameInfo.load.audio('move', 'assets/audio/move.mp3')
                 gameInfo.load.audio('lightning', 'assets/audio/lightning.mp3')
                 gameInfo.load.audio('victory', 'assets/audio/victory.mp3')
+                gameInfo.load.audio('resolve', 'assets/audio/resolve.mp3')
+                gameInfo.load.audio('profit', 'assets/audio/profit.mp3')
+                gameInfo.load.audio('warning', 'assets/audio/warning.mp3')
             }
 
             function createInfo() {
@@ -168,13 +179,19 @@
                 moveSound = gameInfo.add.audio('move')
                 lightningSound = gameInfo.add.audio('lightning')
                 victorySound = gameInfo.add.audio('victory')
+                resolveSound = gameInfo.add.audio('resolve')
+                profitSound = gameInfo.add.audio('profit')
+                warningSound = gameInfo.add.audio('warning')
+
 
                 bigDissolveSound.volume = 0.5;
                 dissolveSound.volume = 0.5;
                 moveSound.volume = 0.5;
                 lightningSound.volume = 0.5;
                 victorySound.volume = 0.5;
-            }
+                resolveSound.volume = 0.5;
+                profitSound.volume = 0.5;
+                warningSound.volume = 0.5;            }
 
             function preload() {
 
@@ -693,6 +710,7 @@
                 if (idx >= 0) {
                     frozenGems[idx].image.destroy();
                     frozenGems.splice(idx, 1);
+                    resolveSound.play();
                 }
             }
 
@@ -845,7 +863,10 @@
                     };
 
                     var attackConditionFulfilled = attackCondition.checkCondition(userObj);
-                    console.log("attack condition fulfilled: " + attackConditionFulfilled);       
+                    console.log("attack condition fulfilled: " + attackConditionFulfilled);
+                    if (attackConditionFulfilled) {
+                        profitSound.play();
+                    }       
 
                     socket.emit('move', {
                         numCombos: numCombos,
