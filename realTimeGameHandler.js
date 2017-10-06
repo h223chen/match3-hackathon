@@ -10,7 +10,6 @@ class RealTimeGameHandler {
 
 		var GAME_LENGTH = 60000;
 		var SCORE_MULTIPLIER = 50;
-
 		// initialize
 		room.users.forEach(function(user) {
 			scoreboard[user.id] = 0;

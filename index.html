@@ -6,7 +6,6 @@
         <title>Gems</title>
         <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
         <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
-        <script src="/assets/shatter.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
   	    
@@ -120,7 +119,6 @@
                 game.load.audio('dissolve', 'assets/audio/dissolve.mp3')
                 game.load.audio('move', 'assets/audio/move.mp3')
 
-
             }
 
             function create() {
@@ -144,8 +142,6 @@
                 dissolveSound.volume = 0.5;
 
             }
-
-
 
             function point(x, y) {
                 return {
@@ -517,6 +513,7 @@
                 
             }
 
+
             // remove from frozen gem list if it get dissolved
             function removeFrozenGems(gem) {
                 var idx = -1;
@@ -608,8 +605,6 @@
 
             }
 
-
-
             // look for any empty spots on the board and spawn new gems in their place that fall down from above
             function refillBoard() {
 
@@ -633,6 +628,7 @@
                             randomizeGemColor(gem);
                             setGemPos(gem, i, j);
                             tweenGemPos(gem, gem.posX, gem.posY, 4);
+
                         }
                     }
 
@@ -677,7 +673,6 @@
                     
                     numCombos = 0;
                     colorMap = {};
-
                     while(pendingFrozenReq > 0) {
                         freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1));
                         pendingFrozenReq--;
