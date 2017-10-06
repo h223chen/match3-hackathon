@@ -67,10 +67,15 @@
                 console.log("increase frozen count to " + pendingFrozenReq);
             });
 
-            function tween(isMyScore, score){
-                
-            }
 
+            socket.on('mustDisolveRequest', function(data) {
+                mustDisolveRequest += data.attackStrength;
+                console.log("increase mustDisolve count to " + mustDisolveRequest);
+            });
+
+            function tween(isMyScore, score){
+
+            }
             function updateScoreboard(scoreboard) {
                 myScore = scoreboard[socket.id];
                 enemyScore = scoreboard[Object.keys(scoreboard).filter(k => k != socket.id)[0]];
@@ -160,6 +165,8 @@
 
             var frozenGems = [];
             var pendingFrozenReq = 0;
+            var mustDisolvedGems = [];
+            var pendingMustDisolvedGems = 0;
 
             var moveSound;
             var dissolveSound;
@@ -209,6 +216,8 @@
                 game.load.audio('move', 'assets/audio/move.mp3')
 
                 game.load.spritesheet('vortex', 'assets/sprites/vortexSprite.png', 64, 64);
+                game.load.spritesheet('vortexRed', 'assets/sprites/vortexRed.png', 64, 64);
+
                 game.load.image("cross", "assets/sprites/cross64x64.png");
                 //game.load.image("ice", "assets/sprites/ice.jpg");
 
@@ -234,7 +243,7 @@
 
                 bigDissolveSound.volume = 0.5;
                 dissolveSound.volume = 0.5;
-                
+
 
                 // create score textboxes
                 scoreText = gameInfo.add.text(10, 10, "Waiting for player two.", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#36D7B7' });
@@ -442,32 +451,61 @@
                 tempShiftedGem = null;
             }
 
-            function freezeGemAt(indexX, indexY) {
-                var freezeGem = new Object();
-                freezeGem.coordinate = point(indexX, indexY);
+            function freezeGemAt(indexX, indexY, isFrozen) {
+                if (isFrozen) {
+                    var freezeGem = new Object();
+                    freezeGem.coordinate = point(indexX, indexY);
+                    var frames = [];
 
-                var frames = [];
+                    for (var i=0; i<23; i++) {
+                        frames.push(i);
+                    }
+                    freezeGem.animation = game.add.sprite(indexX * GEM_SIZE_SPACED, indexY * GEM_SIZE_SPACED, "vortex");
+                    freezeGem.animation.alpha = 1;
+                    freezeGem.animation.scale.setTo(gemRatio,gemRatio);
 
-                for (var i=0; i<23; i++) {
-                    frames.push(i);
+                    freezeGem.animation.frame = 0;
+                    freezeGem.animation.animations.add('play', frames, 24, true);
+                    freezeGem.animation.animations.play('play');
+
+                    frozenGems.push(freezeGem);
+                }
+                else {
+                    var mustDisolvedGem = new Object();
+                    mustDisolvedGem.coordinate = point(indexX, indexY);
+
+                    var frames = [];
+
+                    for (var i=0; i<23; i++) {
+                        frames.push(i);
+                    }
+                    mustDisolvedGem.animation = game.add.sprite(indexX * GEM_SIZE_SPACED, indexY * GEM_SIZE_SPACED, "vortexRed");
+                    mustDisolvedGem.animation.alpha = 1;
+                    mustDisolvedGem.animation.scale.setTo(gemRatio,gemRatio);
+
+                    mustDisolvedGem.animation.frame = 0;
+                    mustDisolvedGem.animation.animations.add('playRed', frames, 24, true);
+                    mustDisolvedGem.animation.animations.play('playRed');
+
+                    mustDisolvedGem.image = game.add.image(indexX * GEM_SIZE_SPACED, indexY * GEM_SIZE_SPACED, "cross");
+                    mustDisolvedGem.image.alpha = 0.6;
+                    mustDisolvedGem.image.scale.setTo(gemRatio,gemRatio);
+
+                    mustDisolvedGems.push(mustDisolvedGem);
                 }
 
-                
 
-                freezeGem.image = game.add.sprite(indexX * GEM_SIZE_SPACED, indexY * GEM_SIZE_SPACED, "vortex");
-                freezeGem.image.alpha = 1;
-                freezeGem.image.scale.setTo(gemRatio,gemRatio);
-
-                freezeGem.image.frame = 0;
-                freezeGem.image.animations.add('play', frames, 24, true);
-                freezeGem.image.animations.play('play');
-
-                frozenGems.push(freezeGem);
             }
 
             function isGemFrozen(point) {
                 for (var i = 0; i < frozenGems.length; i++) {
                     if (point.posX == frozenGems[i].coordinate.posX && point.posY == frozenGems[i].coordinate.posY) {
+                        return true;
+                    }
+                }
+
+                for (var i = 0; i < mustDisolvedGems.length; i++) {
+                    if (point.posX == mustDisolvedGems[i].coordinate.posX && point.posY == mustDisolvedGems[i].coordinate.posY) {
                         return true;
                     }
                 }
@@ -716,9 +754,23 @@
                 }
 
                 if (idx >= 0) {
-                    frozenGems[idx].image.destroy();
+                    frozenGems[idx].animation.destroy();
                     frozenGems.splice(idx, 1);
                     resolveSound.play();
+                }
+
+                idx = -1;
+
+                for (var i = 0; i < mustDisolvedGems.length; i++) {
+                    if (mustDisolvedGems[i].coordinate.posX == gem.posX && mustDisolvedGems[i].coordinate.posY == gem.posY) {
+                        idx = i;
+                    }
+                }
+
+                if (idx >= 0) {
+                    mustDisolvedGems[idx].animation.destroy();
+                    mustDisolvedGems[idx].image.destroy();
+                    mustDisolvedGems.splice(idx, 1);
                 }
             }
 
@@ -763,6 +815,23 @@
                 });
             }
 
+            function isCellLockedAtRow(row, lockedRow) {
+                for (var i = lockedRow.length - 1; i >= 0; i--) {
+                    if (lockedRow[i] < row) return false;
+                    else if (lockedRow[i] == row) return true;
+                }
+                return false;
+            }
+
+            function numCellLockedBelowRow(row, lockedRow) {
+                var count = 0;
+                for (var i = lockedRow.length - 1; i >= 0; i--) {
+                    if (lockedRow[i] > row) count++;
+                    else break;
+                }
+                return count;
+            }
+
             // look for gems with empty space beneath them and move them down
             function dropGems() {
 
@@ -771,7 +840,13 @@
                 for (var i = 0; i < BOARD_COLS; i++)
                 {
                     var dropRowCount = 0;
-                    var freezingCellRows = [];
+                    /*var freezingCellRows = [];
+                    for (var k = 0; k < frozenGems.length; k++) {
+                        if (frozenGems[k].coordinate.posX == i) {
+                            freezingCellRows.push(frozenGems[k].coordinate.posY);
+                        }
+                    }
+                    freezingCellRows.sort();*/
 
                     for (var j = BOARD_ROWS - 1; j >= 0; j--)
                     {
@@ -876,19 +951,30 @@
                         profitSound.play();
                     }       
 
-                    socket.emit('move', {
-                        numCombos: numCombos,
-                        colorMap: colorMap,
-                        attackConditionFulfilled: attackConditionFulfilled
-                    });             
+                    if (mustDisolvedGems.length == 0) {
+                        socket.emit('move', {
+                            numCombos: numCombos,
+                            colorMap: colorMap,
+                            attackConditionFulfilled: attackConditionFulfilled
+                        });
+                    }
+                    else {
+                        console.log("must disolve cross gem before score");
+                    }
                     
                     numCombos = 0;
                     colorMap = {};
 
                     while(pendingFrozenReq > 0) {
                         if (lightningSound) lightningSound.play();
-                        freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1));
+                        freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1), true);
                         pendingFrozenReq--;
+                    }
+
+                    while(pendingMustDisolvedGems > 0) {
+                        if (lightningSound) lightningSound.play();
+                        freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1), false);
+                        pendingMustDisolvedGems--;
                     }
                     allowInput = true;
 
