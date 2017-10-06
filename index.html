@@ -179,9 +179,13 @@
             function preload() {
 
                 game.load.spritesheet("GEMS", "assets/sprites/diamonds32x5.png", GEM_SIZE, GEM_SIZE);
+                game.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
+                game.load.audio('dissolve', 'assets/audio/dissolve.mp3')
+                game.load.audio('move', 'assets/audio/move.mp3')
+
+                game.load.spritesheet('vortex', 'assets/sprites/vortexSprite.png', 64, 64);
                 game.load.image("cross", "assets/sprites/cross64x64.png");
                 //game.load.image("ice", "assets/sprites/ice.jpg");
-
 
 
             }
@@ -198,13 +202,14 @@
                 allowInput = false;
 
                 game.input.addMoveCallback(slideGem, this);
-
                 //sounds
+
                 bigDissolveSound = game.add.audio('bigDissolve')
                 dissolveSound = game.add.audio('dissolve')
 
                 bigDissolveSound.volume = 0.5;
                 dissolveSound.volume = 0.5;
+                
 
                 // create score textboxes
                 scoreText = gameInfo.add.text(10, 10, "Waiting for player two.", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#36D7B7' });
@@ -416,9 +421,21 @@
                 var freezeGem = new Object();
                 freezeGem.coordinate = point(indexX, indexY);
 
-                freezeGem.image = game.add.image(indexX * GEM_SIZE_SPACED, indexY * GEM_SIZE_SPACED, "cross");
-                freezeGem.image.alpha = 0.6;
+                var frames = [];
+
+                for (var i=0; i<23; i++) {
+                    frames.push(i);
+                }
+
+                
+
+                freezeGem.image = game.add.sprite(indexX * GEM_SIZE_SPACED, indexY * GEM_SIZE_SPACED, "vortex");
+                freezeGem.image.alpha = 1;
                 freezeGem.image.scale.setTo(gemRatio,gemRatio);
+
+                freezeGem.image.frame = 0;
+                freezeGem.image.animations.add('play', frames, 24, true);
+                freezeGem.image.animations.play('play');
 
                 frozenGems.push(freezeGem);
             }
