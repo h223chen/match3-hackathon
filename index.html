@@ -6,7 +6,6 @@
         <title>Gems</title>
         <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
         <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
-        <script src="/assets/shatter.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
   	    
@@ -28,10 +27,12 @@
             else {
                 windowHeight = windowWidth / 1.2
             }
+
             var gemRatio = windowHeight / 340;
             var scoreText;
-            var myScore;
-            var enemyScore;
+            var enemyScoreText;
+            var myScore = 0;
+            var enemyScore = 0;
 
             var socket = io();
             sr = socket;
@@ -48,11 +49,36 @@
                 console.log("increase frozen count to " + pendingFrozenReq);
             });
 
+            function tween(isMyScore, score){
+                
+            }
+
             function updateScoreboard(scoreboard) {
                 myScore = scoreboard[socket.id];
                 enemyScore = scoreboard[Object.keys(scoreboard).filter(k => k != socket.id)[0]];
-                $("#myScore").text(myScore);
-                $("#enemyScore").text(enemyScore);
+                if (scoreText) {
+                    var pointsTween = gameInfo.add.tween(scoreText);
+                    pointsTween.to({ tweenedPoints: myScore}, 180, Phaser.Easing.Linear.None, true);
+                    pointsTween.onUpdateCallback(function(){
+                        scoreText.setText('Score: '+Math.floor(scoreText.tweenedPoints));
+                    }, gameInfo);
+                    pointsTween.onComplete.addOnce(function(){
+                        scoreText.setText('Score: '+myScore);
+                    }, gameInfo);
+                    pointsTween.start();
+                }
+                if (enemyScoreText) {
+                    var enemyPointsTween = gameInfo.add.tween(enemyScoreText);
+                    enemyPointsTween.to({ tweenedPoints: enemyScore}, 180, Phaser.Easing.Linear.None, true);
+                    enemyPointsTween.onUpdateCallback(function(){
+                        enemyScoreText.setText('Enemy: '+Math.floor(enemyScoreText.tweenedPoints));
+                    }, gameInfo);
+                    enemyPointsTween.onComplete.addOnce(function(){
+                        enemyScoreText.setText('Enemy: '+enemyScore);
+                    }, gameInfo);
+                    enemyPointsTween.start();
+                }
+
             }
 
             // TODO MAKE WORK FOR MORE THAN 3 PLAYERS
@@ -60,8 +86,7 @@
                 updateScoreboard(data.scoreboard);
             });
             socket.on('gameStart', function(data) {
-                $("#myScore").text("0");
-                $("#enemyScore").text("0");
+                updateScoreboard(data.scoreboard);
             });
 
             // end the game
@@ -143,6 +168,11 @@
                 bigDissolveSound.volume = 0.5;
                 dissolveSound.volume = 0.5;
 
+                // create score textboxes
+                scoreText = gameInfo.add.text(10, 10, "Waiting for player two.", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#36D7B7' });
+                enemyScoreText = gameInfo.add.text(windowWidth * .68, 10, "Insert Coin", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#E29C45' });
+                scoreText.tweenedPoints = 0;
+                enemyScoreText.tweenedPoints = 0;
             }
 
 
@@ -668,12 +698,12 @@
                     allowInput = false;
                 } else {
                     socket.emit('move', { numCombos: numCombos, colorMap: colorMap });
-                    console.log("Number of Combos: " + numCombos);
+                    /*console.log("Number of Combos: " + numCombos);
                     
                     console.log("Color Map :"); 
                     for (var key in colorMap) {
                         console.log(key + " : " + colorMap[key]);
-                    }
+                    }*/
                     
                     numCombos = 0;
                     colorMap = {};
@@ -690,8 +720,6 @@
 
     </script>
     <div id="gems"></div>
-    <h2>Your Score: <span id='myScore'>Waiting for game to start...</span></h2>
-    <h2>Your Opponent's Score: <span id='enemyScore'>Waiting for game to start...</span></h2>
 
     </body>
 </html>
