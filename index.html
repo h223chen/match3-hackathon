@@ -8,7 +8,8 @@
         <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
     </head>
-    <body style="margin:0">
+
+    <body style="margin:0;">
 
     <script type="text/javascript">
         // lets browser access socket variable.
@@ -105,6 +106,11 @@
             socket.on('gameStart', function(data) {
                 enemyName = data.names[Object.keys(data.names).filter(k => k != socket.id)[0]];
                 updateScoreboard(data.scoreboard);
+                if (data.gameLength >= 10000) {
+                    setTimeout(function() {
+                        warningSound.play();
+                    }, data.gameLength - 10000);
+                }
             });
 
             // end the game
@@ -160,6 +166,9 @@
             var bigDissolveSound;
             var lightningSound;
             var victorySound;
+            var resolveSound;
+            var profitSound;
+            var warningSound;
 
             function preloadInfo() {
                 gameInfo.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
@@ -167,6 +176,9 @@
                 gameInfo.load.audio('move', 'assets/audio/move.mp3')
                 gameInfo.load.audio('lightning', 'assets/audio/lightning.mp3')
                 gameInfo.load.audio('victory', 'assets/audio/victory.mp3')
+                gameInfo.load.audio('resolve', 'assets/audio/resolve.mp3')
+                gameInfo.load.audio('profit', 'assets/audio/profit.mp3')
+                gameInfo.load.audio('warning', 'assets/audio/warning.mp3')
             }
 
             function createInfo() {
@@ -175,20 +187,30 @@
                 moveSound = gameInfo.add.audio('move')
                 lightningSound = gameInfo.add.audio('lightning')
                 victorySound = gameInfo.add.audio('victory')
+                resolveSound = gameInfo.add.audio('resolve')
+                profitSound = gameInfo.add.audio('profit')
+                warningSound = gameInfo.add.audio('warning')
+
 
                 bigDissolveSound.volume = 0.5;
                 dissolveSound.volume = 0.5;
                 moveSound.volume = 0.5;
                 lightningSound.volume = 0.5;
                 victorySound.volume = 0.5;
-            }
+                resolveSound.volume = 0.5;
+                profitSound.volume = 0.5;
+                warningSound.volume = 0.5;            }
 
             function preload() {
 
                 game.load.spritesheet("GEMS", "assets/sprites/diamonds32x5.png", GEM_SIZE, GEM_SIZE);
+                game.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
+                game.load.audio('dissolve', 'assets/audio/dissolve.mp3')
+                game.load.audio('move', 'assets/audio/move.mp3')
+
+                game.load.spritesheet('vortex', 'assets/sprites/vortexSprite.png', 64, 64);
                 game.load.image("cross", "assets/sprites/cross64x64.png");
                 //game.load.image("ice", "assets/sprites/ice.jpg");
-
 
 
             }
@@ -205,13 +227,14 @@
                 allowInput = false;
 
                 game.input.addMoveCallback(slideGem, this);
-
                 //sounds
+
                 bigDissolveSound = game.add.audio('bigDissolve')
                 dissolveSound = game.add.audio('dissolve')
 
                 bigDissolveSound.volume = 0.5;
                 dissolveSound.volume = 0.5;
+                
 
                 // create score textboxes
                 scoreText = gameInfo.add.text(10, 10, "Waiting for player two.", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#36D7B7' });
@@ -423,9 +446,21 @@
                 var freezeGem = new Object();
                 freezeGem.coordinate = point(indexX, indexY);
 
-                freezeGem.image = game.add.image(indexX * GEM_SIZE_SPACED, indexY * GEM_SIZE_SPACED, "cross");
-                freezeGem.image.alpha = 0.6;
+                var frames = [];
+
+                for (var i=0; i<23; i++) {
+                    frames.push(i);
+                }
+
+                
+
+                freezeGem.image = game.add.sprite(indexX * GEM_SIZE_SPACED, indexY * GEM_SIZE_SPACED, "vortex");
+                freezeGem.image.alpha = 1;
                 freezeGem.image.scale.setTo(gemRatio,gemRatio);
+
+                freezeGem.image.frame = 0;
+                freezeGem.image.animations.add('play', frames, 24, true);
+                freezeGem.image.animations.play('play');
 
                 frozenGems.push(freezeGem);
             }
@@ -683,6 +718,7 @@
                 if (idx >= 0) {
                     frozenGems[idx].image.destroy();
                     frozenGems.splice(idx, 1);
+                    resolveSound.play();
                 }
             }
 
@@ -835,7 +871,10 @@
                     };
 
                     var attackConditionFulfilled = attackCondition.checkCondition(userObj);
-                    console.log("attack condition fulfilled: " + attackConditionFulfilled);       
+                    console.log("attack condition fulfilled: " + attackConditionFulfilled);
+                    if (attackConditionFulfilled) {
+                        profitSound.play();
+                    }       
 
                     socket.emit('move', {
                         numCombos: numCombos,
