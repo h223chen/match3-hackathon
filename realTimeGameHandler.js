@@ -11,7 +11,7 @@ class RealTimeGameHandler {
 		var userNames = {};
 		var playersReady = 1;
 
-		var GAME_LENGTH = 60000 + 2000; // 2 second buffer
+		var GAME_LENGTH = 150000 + 2000; // 2 second buffer
 		var SCORE_MULTIPLIER = 50;
 
 		// initialize
