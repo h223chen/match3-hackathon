@@ -5,7 +5,7 @@
         <meta charset="UTF-8" />
         <title>Gems</title>
         <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-        <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
+        <script src="js/phaser.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
     </head>
 
@@ -15,7 +15,7 @@
         // lets browser access socket variable.
         var sr;
         var name = "";
-
+        var self = this;
         window.onload = function() {
             //suggested name is in cookie
             name = prompt("Please enter your username:", document.cookie.replace(/(?:(?:^|.*;\s*)name\s*\=\s*([^;]*).*$)|^.*$/, "$1"));
@@ -137,9 +137,9 @@
                 updateScoreboard(data.scoreboard);
             });
             socket.on('gameStart', function(data) {
-                if (music) {
-                    music.play();
-                }
+                // if (music) {
+                //     music.play();
+                // }
                 enemyName = data.names[Object.keys(data.names).filter(k => k != socket.id)[0]];
                 updateScoreboard(data.scoreboard);
                 initializeTimer(data.gameLength);
@@ -205,39 +205,12 @@
             var warningSound;
 
             function preloadInfo() {
-                gameInfo.load.audio('bgm', 'assets/audio/bgm.mp3')
 
-                gameInfo.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
-                gameInfo.load.audio('dissolve', 'assets/audio/dissolve.mp3')
-                gameInfo.load.audio('move', 'assets/audio/move.mp3')
-                gameInfo.load.audio('lightning', 'assets/audio/lightning.mp3')
-                gameInfo.load.audio('victory', 'assets/audio/victory.mp3')
-                gameInfo.load.audio('resolve', 'assets/audio/resolve.mp3')
-                gameInfo.load.audio('profit', 'assets/audio/profit.mp3')
-                gameInfo.load.audio('warning', 'assets/audio/warning.mp3')
+                
             }
 
             function createInfo() {
-                music = gameInfo.add.audio('bgm')
-                bigDissolveSound = gameInfo.add.audio('bigDissolve')
-                dissolveSound = gameInfo.add.audio('dissolve')
-                moveSound = gameInfo.add.audio('move')
-                lightningSound = gameInfo.add.audio('lightning')
-                victorySound = gameInfo.add.audio('victory')
-                resolveSound = gameInfo.add.audio('resolve')
-                profitSound = gameInfo.add.audio('profit')
-                warningSound = gameInfo.add.audio('warning')
-
-                music.volume = 0.5;
-                bigDissolveSound.volume = 0.5;
-                dissolveSound.volume = 0.5;
-                moveSound.volume = 0.5;
-                lightningSound.volume = 0.5;
-                victorySound.volume = 0.5;
-                resolveSound.volume = 0.5;
-                profitSound.volume = 0.5;
-                warningSound.volume = 0.5;           
-
+                
                 socket.emit('ready');
             }
 
@@ -248,9 +221,16 @@
                 game.load.audio('dissolve', 'assets/audio/dissolve.mp3')
                 game.load.audio('move', 'assets/audio/move.mp3')
 
+                game.load.audio('bgm', 'assets/audio/bgm.mp3')                
+                game.load.audio('lightning', 'assets/audio/lightning.mp3')
+                game.load.audio('victory', 'assets/audio/victory.mp3')
+                game.load.audio('resolve', 'assets/audio/resolve.mp3')
+                game.load.audio('profit', 'assets/audio/profit.mp3')
+                game.load.audio('warning', 'assets/audio/warning.mp3')
+
                 game.load.spritesheet('vortex', 'assets/sprites/vortexSprite.png', 64, 64);
                 game.load.spritesheet('vortexRed', 'assets/sprites/vortexRed.png', 64, 64);
-                gameInfo.load.spritesheet('attack', 'assets/sprites/attack.png', 522, 522);
+                game.load.spritesheet('attack', 'assets/sprites/attack.png', 522, 522);
 
                 game.load.image("cross", "assets/sprites/cross64x64.png");
                 //game.load.image("ice", "assets/sprites/ice.jpg");
@@ -259,7 +239,9 @@
 
             }
 
-            function create() {
+            function create() {   
+                // game.sound.boot();
+                // game.sound.unlock();
                 game.add.tileSprite(0, 0, windowWidth, windowHeight, 'background');
                 // fill the screen with as many gems as possible
                 spawnBoard();
@@ -275,11 +257,28 @@
                 game.input.addMoveCallback(slideGem, this);
                 //sounds
 
+                music = game.add.audio('bgm')
+
+                music.play();
                 bigDissolveSound = game.add.audio('bigDissolve')
                 dissolveSound = game.add.audio('dissolve')
+                // moveSound = gameInfo.add.audio('move')
+                lightningSound = game.add.audio('lightning')
+                victorySound = game.add.audio('victory')
+                resolveSound = game.add.audio('resolve')
+                profitSound = game.add.audio('profit')
+                warningSound = game.add.audio('warning')
 
+                music.volume = 0.5;
                 bigDissolveSound.volume = 0.5;
                 dissolveSound.volume = 0.5;
+                // moveSound.volume = 0.5;
+                lightningSound.volume = 0.5;
+                victorySound.volume = 0.5;
+                resolveSound.volume = 0.5;
+                profitSound.volume = 0.5;
+                warningSound.volume = 0.5;           
+
 
                 // create score textboxes
                 scoreText = gameInfo.add.text(10, 10, "Searching for match", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#36D7B7' });
@@ -441,6 +440,9 @@
                             }
                             else
                             {
+
+                                var moveSound = game.add.audio('move')
+                                moveSound.volume = 0.5;
                                 moveSound.play();
 
                                 tweenGemPos(tempShiftedGem, selectedGem.posX, selectedGem.posY);
