@@ -243,7 +243,7 @@
 
             function preload() {
 
-                game.load.spritesheet("GEMS", "assets/sprites/diamonds32x5.png", GEM_SIZE, GEM_SIZE);
+                game.load.spritesheet("GEMS", "assets/sprites/execs32x5.png", GEM_SIZE, GEM_SIZE);
                 game.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
                 game.load.audio('dissolve', 'assets/audio/dissolve.mp3')
                 game.load.audio('move', 'assets/audio/move.mp3')
@@ -325,7 +325,7 @@
                             }
                             return false;
                         },
-                        description: "Make 6 or more combos"
+                        description: "Let the Tornowment begin!"
                     },
                     "6runes": {
                         checkCondition: function(userObj) {                            
@@ -334,7 +334,7 @@
                             } 
                             return false;
                         },
-                        description: "Make 6 or more of " + colors[randomColor]
+                        description: "Spin at Zynga Speed!"
                     },
                     "columns": {
                         checkCondition: function(userObj) {
@@ -344,7 +344,7 @@
 
                             return conditionMet;
                         },
-                        description: "Dissolve runes on the " + (randomColumnRow == 0 ? "left" : "right") + " column"
+                        description: "Investors hate me"
                     },
                     "rows": {
                        checkCondition: function(userObj) {
@@ -354,7 +354,7 @@
 
                             return conditionMet;
                        },
-                       description: "Dissolve runes on the " + (randomColumnRow == 0 ? "top" : "bottom") + " row"
+                       description: "... How the ..."
                     }
                 }                
 
