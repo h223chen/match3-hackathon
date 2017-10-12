@@ -852,10 +852,10 @@
                 {
                     durationMultiplier = 0.75;
                     if (newPosY !== gem.posY){
-                        midpointX = newPosX + newPosX * (gem === tempShiftedGem ? 0.2 : -0.2);
+                        midpointX = newPosX + (gem === tempShiftedGem ? 1 : -1);
                     }
                     if (newPosX !== gem.posX) {
-                        midpointY = newPosY + newPosY * (gem === tempShiftedGem ? 0.2 : -0.2);
+                        midpointY = newPosY + (gem === tempShiftedGem ? 1 : -1);
                     }
                 }
                 return game.add.tween(gem).to({
