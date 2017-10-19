@@ -1023,18 +1023,14 @@
                     while(pendingFrozenReq > 0) {
                         if (lightningSound) lightningSound.play();
                         gameInfo.camera.flash(0xff0000, 500);
-                        var frames = [];
 
-                        for (var i=0; i<6; i++) {
-                            frames.push(i);
-                        }
                         var animation = {};
-                        animation = gameInfo.add.sprite(0, 0, "attack");
+                        animation = gameInfo.add.sprite(0, 0, 'attack');
                         animation.alpha = 1;
-                        animation.scale.setTo(gemRatio,gemRatio);
+                        animation.scale.setTo(windowWidth / 522, (window.innerHeight - windowHeight) / 522);
 
                         animation.frame = 0;
-                        animation.animations.add('play2', frames, 6, false);
+                        animation.animations.add('play2', [0, 1, 2, 3, 4, 5], 24, false, true);
                         animation.animations.play('play2');
                         freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1), true);
                         pendingFrozenReq--;
@@ -1044,18 +1040,13 @@
                         if (lightningSound) lightningSound.play();
                         gameInfo.camera.flash(0xff0000, 500);
 
-                        var frames = [];
-
-                        for (var i=0; i<6; i++) {
-                            frames.push(i);
-                        }
                         var animation = {};
-                        animation = gameInfo.add.sprite(0, 0, "attack");
+                        animation = gameInfo.add.sprite(0, 0, 'attack');
                         animation.alpha = 1;
-                        animation.scale.setTo(gemRatio,gemRatio);
+                        animation.scale.setTo(windowWidth / 522, (window.innerHeight - windowHeight) / 522);
 
                         animation.frame = 0;
-                        animation.animations.add('play3', frames, 6, false);
+                        animation.animations.add('play3', [0, 1, 2, 3, 4, 5], 24, false, true);
                         animation.animations.play('play3');
                         freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1), false);
                         pendingMustDisolvedGems--;
