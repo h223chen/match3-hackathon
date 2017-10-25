@@ -5,8 +5,8 @@
         <meta charset="UTF-8" />
         <title>Gems</title>
         <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-        <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
-	<script src="/socket.io/socket.io.js"></script>
+        <script src="js/phaser.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     </head>
 
     <body style="margin:0;">
@@ -15,7 +15,7 @@
         // lets browser access socket variable.
         var sr;
         var name = "";
-
+        var self = this;
         window.onload = function() {
             //suggested name is in cookie
             name = prompt("Please enter your username:", document.cookie.replace(/(?:(?:^|.*;\s*)name\s*\=\s*([^;]*).*$)|^.*$/, "$1"));
@@ -33,11 +33,13 @@
 
             var colors = {
                 0 : "red",
-                1 : "orange",
+                1 : "yellow",
                 2 : "green",
                 3 : "purple",
                 4 : "blue"
             }
+
+            var gameIsOver = false;
 
             var leftColumnKill = 0;
             var rightColumnKill = 0;
@@ -137,9 +139,9 @@
                 updateScoreboard(data.scoreboard);
             });
             socket.on('gameStart', function(data) {
-                if (music) {
-                    music.play();
-                }
+                // if (music) {
+                //     music.play();
+                // }
                 enemyName = data.names[Object.keys(data.names).filter(k => k != socket.id)[0]];
                 updateScoreboard(data.scoreboard);
                 initializeTimer(data.gameLength);
@@ -156,7 +158,10 @@
                 gameOverText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
 
                 if (victorySound && victory) victorySound.play();
-                game.paused = true;
+                allowInput = false;
+
+                gameIsOver = true;
+                releaseGem();
                 console.log("Game end");
             });
 
@@ -205,39 +210,12 @@
             var warningSound;
 
             function preloadInfo() {
-                gameInfo.load.audio('bgm', 'assets/audio/bgm.mp3')
-
-                gameInfo.load.audio('bigDissolve', 'assets/audio/bigDissolve.mp3')
-                gameInfo.load.audio('dissolve', 'assets/audio/dissolve.mp3')
-                gameInfo.load.audio('move', 'assets/audio/move.mp3')
-                gameInfo.load.audio('lightning', 'assets/audio/lightning.mp3')
-                gameInfo.load.audio('victory', 'assets/audio/victory.mp3')
-                gameInfo.load.audio('resolve', 'assets/audio/resolve.mp3')
-                gameInfo.load.audio('profit', 'assets/audio/profit.mp3')
-                gameInfo.load.audio('warning', 'assets/audio/warning.mp3')
+                gameInfo.load.spritesheet('attack', 'assets/sprites/attack.png', 522, 522);
+                
             }
 
             function createInfo() {
-                music = gameInfo.add.audio('bgm')
-                bigDissolveSound = gameInfo.add.audio('bigDissolve')
-                dissolveSound = gameInfo.add.audio('dissolve')
-                moveSound = gameInfo.add.audio('move')
-                lightningSound = gameInfo.add.audio('lightning')
-                victorySound = gameInfo.add.audio('victory')
-                resolveSound = gameInfo.add.audio('resolve')
-                profitSound = gameInfo.add.audio('profit')
-                warningSound = gameInfo.add.audio('warning')
-
-                music.volume = 0.5;
-                bigDissolveSound.volume = 0.5;
-                dissolveSound.volume = 0.5;
-                moveSound.volume = 0.5;
-                lightningSound.volume = 0.5;
-                victorySound.volume = 0.5;
-                resolveSound.volume = 0.5;
-                profitSound.volume = 0.5;
-                warningSound.volume = 0.5;           
-
+                
                 socket.emit('ready');
             }
 
@@ -248,9 +226,16 @@
                 game.load.audio('dissolve', 'assets/audio/dissolve.mp3')
                 game.load.audio('move', 'assets/audio/move.mp3')
 
+                game.load.audio('bgm', 'assets/audio/bgm.mp3')                
+                game.load.audio('lightning', 'assets/audio/lightning.mp3')
+                game.load.audio('victory', 'assets/audio/victory.mp3')
+                game.load.audio('resolve', 'assets/audio/resolve.mp3')
+                game.load.audio('profit', 'assets/audio/profit.mp3')
+                game.load.audio('warning', 'assets/audio/warning.mp3')
+
                 game.load.spritesheet('vortex', 'assets/sprites/vortexSprite.png', 64, 64);
                 game.load.spritesheet('vortexRed', 'assets/sprites/vortexRed.png', 64, 64);
-                gameInfo.load.spritesheet('attack', 'assets/sprites/attack.png', 522, 522);
+                
 
                 game.load.image("cross", "assets/sprites/cross64x64.png");
                 //game.load.image("ice", "assets/sprites/ice.jpg");
@@ -259,7 +244,9 @@
 
             }
 
-            function create() {
+            function create() {   
+                // game.sound.boot();
+                // game.sound.unlock();
                 game.add.tileSprite(0, 0, windowWidth, windowHeight, 'background');
                 // fill the screen with as many gems as possible
                 spawnBoard();
@@ -275,11 +262,28 @@
                 game.input.addMoveCallback(slideGem, this);
                 //sounds
 
+                music = game.add.audio('bgm')
+
+                music.play();
                 bigDissolveSound = game.add.audio('bigDissolve')
                 dissolveSound = game.add.audio('dissolve')
+                // moveSound = gameInfo.add.audio('move')
+                lightningSound = game.add.audio('lightning')
+                victorySound = game.add.audio('victory')
+                resolveSound = game.add.audio('resolve')
+                profitSound = game.add.audio('profit')
+                warningSound = game.add.audio('warning')
 
+                music.volume = 0.5;
                 bigDissolveSound.volume = 0.5;
                 dissolveSound.volume = 0.5;
+                // moveSound.volume = 0.5;
+                lightningSound.volume = 0.5;
+                victorySound.volume = 0.5;
+                resolveSound.volume = 0.5;
+                profitSound.volume = 0.5;
+                warningSound.volume = 0.5;           
+
 
                 // create score textboxes
                 scoreText = gameInfo.add.text(10, 10, "Searching for match", { font: Math.floor(windowWidth / 20)+ 'px sans-serif', fill: '#36D7B7' });
@@ -367,6 +371,12 @@
             function releaseGem() {
                 if (floatingGem == null) return;
                 floatingGem.destroy();
+
+                if (gameIsOver) {
+                    allowInput = false;
+                }
+                
+
                 if (tempShiftedGem === null) {                    
                     selectedGem.alpha = 1;
                     selectedGem = null;
@@ -386,6 +396,7 @@
                 tempShiftedGem = null;
 
                 pathArray = [];
+
             }
 
             function slideGem(pointer, x, y) {
@@ -441,6 +452,9 @@
                             }
                             else
                             {
+
+                                var moveSound = game.add.audio('move')
+                                moveSound.volume = 0.5;
                                 moveSound.play();
 
                                 tweenGemPos(tempShiftedGem, selectedGem.posX, selectedGem.posY);
@@ -838,10 +852,10 @@
                 {
                     durationMultiplier = 0.75;
                     if (newPosY !== gem.posY){
-                        midpointX = newPosX + newPosX * (gem === tempShiftedGem ? 0.2 : -0.2);
+                        midpointX = newPosX + (gem === tempShiftedGem ? 1 : -1);
                     }
                     if (newPosX !== gem.posX) {
-                        midpointY = newPosY + newPosY * (gem === tempShiftedGem ? 0.2 : -0.2);
+                        midpointY = newPosY + (gem === tempShiftedGem ? 1 : -1);
                     }
                 }
                 return game.add.tween(gem).to({
@@ -1009,18 +1023,14 @@
                     while(pendingFrozenReq > 0) {
                         if (lightningSound) lightningSound.play();
                         gameInfo.camera.flash(0xff0000, 500);
-                        var frames = [];
 
-                        for (var i=0; i<6; i++) {
-                            frames.push(i);
-                        }
                         var animation = {};
-                        animation = gameInfo.add.sprite(0, 0, "attack");
+                        animation = gameInfo.add.sprite(0, 0, 'attack');
                         animation.alpha = 1;
-                        animation.scale.setTo(gemRatio,gemRatio);
+                        animation.scale.setTo(windowWidth / 522, (window.innerHeight - windowHeight) / 522);
 
                         animation.frame = 0;
-                        animation.animations.add('play2', frames, 6, false);
+                        animation.animations.add('play2', [0, 1, 2, 3, 4, 5], 24, false, true);
                         animation.animations.play('play2');
                         freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1), true);
                         pendingFrozenReq--;
@@ -1030,18 +1040,13 @@
                         if (lightningSound) lightningSound.play();
                         gameInfo.camera.flash(0xff0000, 500);
 
-                        var frames = [];
-
-                        for (var i=0; i<6; i++) {
-                            frames.push(i);
-                        }
                         var animation = {};
-                        animation = gameInfo.add.sprite(0, 0, "attack");
+                        animation = gameInfo.add.sprite(0, 0, 'attack');
                         animation.alpha = 1;
-                        animation.scale.setTo(gemRatio,gemRatio);
+                        animation.scale.setTo(windowWidth / 522, (window.innerHeight - windowHeight) / 522);
 
                         animation.frame = 0;
-                        animation.animations.add('play3', frames, 6, false);
+                        animation.animations.add('play3', [0, 1, 2, 3, 4, 5], 24, false, true);
                         animation.animations.play('play3');
                         freezeGemAt(game.rnd.integerInRange(0, BOARD_COLS - 1), game.rnd.integerInRange(0, BOARD_ROWS - 1), false);
                         pendingMustDisolvedGems--;

@@ -58,6 +58,7 @@ function setupConnection(socket) {
 
 var ifaces = os.networkInterfaces();
 app.use('/assets', express.static(__dirname + '/assets'));
+app.use('/js', express.static(__dirname + '/js'));
 app.get('/',function(req,res){
     res.sendFile(__dirname+'/index.html');
 });
